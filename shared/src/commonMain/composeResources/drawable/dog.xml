@@ -1,0 +1,74 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+  <!-- Dog body -->
+  <path
+      android:pathData="M30,70C30,65 35,60 40,60L80,60C85,60 90,65 90,70L90,85C90,90 85,95 80,95L40,95C35,95 30,90 30,85Z"
+      android:fillColor="#8B4513"/>
+  
+  <!-- Dog head -->
+  <path
+      android:pathData="M45,35C45,25 52,15 60,15C68,15 75,25 75,35L75,55C75,65 68,75 60,75C52,75 45,65 45,55Z"
+      android:fillColor="#8B4513"/>
+  
+  <!-- Dog ears -->
+  <path
+      android:pathData="M40,25C40,20 45,15 50,20C52,22 50,30 45,35C42,32 40,28 40,25Z"
+      android:fillColor="#654321"/>
+  
+  <path
+      android:pathData="M80,25C80,20 75,15 70,20C68,22 70,30 75,35C78,32 80,28 80,25Z"
+      android:fillColor="#654321"/>
+  
+  <!-- Dog snout -->
+  <path
+      android:pathData="M52,50C52,45 56,40 60,40C64,40 68,45 68,50L68,60C68,65 64,70 60,70C56,70 52,65 52,60Z"
+      android:fillColor="#D2B48C"/>
+  
+  <!-- Dog nose -->
+  <path
+      android:pathData="M58,45C58,43 59,42 60,42C61,42 62,43 62,45C62,47 61,48 60,48C59,48 58,47 58,45Z"
+      android:fillColor="#000000"/>
+  
+  <!-- Dog eyes -->
+  <path
+      android:pathData="M52,35C52,33 53,32 54,32C55,32 56,33 56,35C56,37 55,38 54,38C53,38 52,37 52,35Z"
+      android:fillColor="#000000"/>
+  
+  <path
+      android:pathData="M64,35C64,33 65,32 66,32C67,32 68,33 68,35C68,37 67,38 66,38C65,38 64,37 64,35Z"
+      android:fillColor="#000000"/>
+  
+  <!-- Dog legs -->
+  <path
+      android:pathData="M35,85L35,105C35,107 37,109 39,109L41,109C43,109 45,107 45,105L45,85"
+      android:fillColor="#8B4513"/>
+  
+  <path
+      android:pathData="M50,85L50,105C50,107 52,109 54,109L56,109C58,109 60,107 60,105L60,85"
+      android:fillColor="#8B4513"/>
+  
+  <path
+      android:pathData="M60,85L60,105C60,107 62,109 64,109L66,109C68,109 70,107 70,105L70,85"
+      android:fillColor="#8B4513"/>
+  
+  <path
+      android:pathData="M75,85L75,105C75,107 77,109 79,109L81,109C83,109 85,107 85,105L85,85"
+      android:fillColor="#8B4513"/>
+  
+  <!-- Dog tail -->
+  <path
+      android:pathData="M90,75C95,70 100,65 105,70C107,72 105,80 100,85C95,80 90,78 90,75Z"
+      android:fillColor="#8B4513"/>
+  
+  <!-- Dog spots -->
+  <path
+      android:pathData="M50,65C50,63 52,61 54,61C56,61 58,63 58,65C58,67 56,69 54,69C52,69 50,67 50,65Z"
+      android:fillColor="#654321"/>
+  
+  <path
+      android:pathData="M70,80C70,78 72,76 74,76C76,76 78,78 78,80C78,82 76,84 74,84C72,84 70,82 70,80Z"
+      android:fillColor="#654321"/>
+</vector>

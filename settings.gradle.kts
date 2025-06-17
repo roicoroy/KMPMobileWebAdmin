@@ -29,3 +29,16 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":shared")
+include(":data")
+include(":di")
+include(":navigation")
+
+include(":feature:home")
+include(":feature:profile")
+include(":feature:adverts")
+include(":feature:adverts:advert-details")
+include(":feature:auth:login")
+include(":feature:auth:register")
+include(":feature:logger")
+include(":feature:logger:details")
