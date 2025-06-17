@@ -24,6 +24,12 @@ kotlin {
             isStatic = true
         }
     }
+
+    // Add wasmJs target to data module
+    wasmJs {
+        browser()
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(compose.runtime)

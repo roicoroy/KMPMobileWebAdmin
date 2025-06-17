@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -27,6 +28,7 @@ kotlin {
     }
 
     // Add wasmJs target to navigation module
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
     }

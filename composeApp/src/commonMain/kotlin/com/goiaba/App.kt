@@ -1,44 +1,65 @@
 package com.goiaba
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
+import com.goiaba.navigation.SetupNavGraph
+import com.goiaba.shared.navigation.Screen
+import com.goiaba.shared.theme.AppTypography
+import com.goiaba.shared.theme.darkScheme
+import com.goiaba.shared.theme.lightScheme
+import com.goiaba.shared.util.TokenManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-import kmpmobilewebadmin.composeapp.generated.resources.Res
-import kmpmobilewebadmin.composeapp.generated.resources.compose_multiplatform
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
+
+    val loggedIn = MutableStateFlow(TokenManager.isLoggedIn())
+    val isLoggedIn: StateFlow<Boolean> = loggedIn.asStateFlow()
+
+    AppTheme {
         Column(
             modifier = Modifier
                 .safeContentPadding()
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+            val startDestination = remember {
+                if (isLoggedIn.value) Screen.HomeGraph
+                else Screen.LoginScreen
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
+
+            SetupNavGraph(
+                startDestination
+            )
         }
     }
+}
+
+
+@Composable
+fun AppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true,
+    content: @Composable() () -> Unit
+) {
+    val colorScheme = when {
+        darkTheme -> darkScheme
+        else -> lightScheme
+    }
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = AppTypography,
+        content = content
+    )
 }

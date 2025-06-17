@@ -35,12 +35,7 @@ object ApiClient {
             val token = TokenManager.getToken()
             if (token != null) {
                 header(HttpHeaders.Authorization, "Bearer $token")
-//                header(HttpHeaders.Authorization, "Bearer 603e9bf85124b9f6357b2c498f2e14ac4e877d7b137bf013562deabf8dbba745f7f25b516c71a1b880846b846857346a8e88f62a030f0553112a68f5b4f28305356cb1a2e8a1a706f90f9efff713adaaa78a9f520910a5dd9583cace0249984832a1567e64d66663a8addcbcd316359268cbfad8e104d505cd8a3ae07744bb8b")
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
 
-            } else {
-//                header(HttpHeaders.Authorization, "Bearer 603e9bf85124b9f6357b2c498f2e14ac4e877d7b137bf013562deabf8dbba745f7f25b516c71a1b880846b846857346a8e88f62a030f0553112a68f5b4f28305356cb1a2e8a1a706f90f9efff713adaaa78a9f520910a5dd9583cace0249984832a1567e64d66663a8addcbcd316359268cbfad8e104d505cd8a3ae07744bb8b")
-                header(HttpHeaders.ContentType, ContentType.Application.Json)
             }
         }
     }
