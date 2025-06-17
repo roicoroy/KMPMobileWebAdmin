@@ -22,6 +22,12 @@ kotlin {
             isStatic = true
         }
     }
+
+    // Add wasmJs target to di module
+    wasmJs {
+        browser()
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -37,12 +43,10 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
-
             implementation(project(":shared"))
             implementation(project(":data"))
             implementation(project(":feature:home"))
             implementation(project(path = ":feature:profile"))
-
             implementation(project(":feature:adverts"))
             implementation(project(":feature:adverts:advert-details"))
             implementation(project(path = ":feature:auth:login"))

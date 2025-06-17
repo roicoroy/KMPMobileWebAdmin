@@ -25,6 +25,12 @@ kotlin {
             isStatic = true
         }
     }
+
+    // Add wasmJs target to navigation module
+    wasmJs {
+        browser()
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -62,7 +68,6 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
-//        targetSdk = libs.versions.android.targetSdk.get().toInt()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

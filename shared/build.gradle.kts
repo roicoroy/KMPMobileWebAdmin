@@ -26,6 +26,11 @@ kotlin {
         }
     }
 
+    // Add wasmJs target to shared module
+    wasmJs {
+        browser()
+    }
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)

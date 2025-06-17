@@ -56,6 +56,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
         }
+        
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -66,11 +67,19 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
 
-//            implementation(project(path = ":navigation"))
-//            implementation(project(path = ":shared"))
-//            implementation(project(path = ":di"))
-            implementation(project(path = ":data"))
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+
+            implementation(libs.compose.navigation)
+
+            // Project dependencies
+            implementation(project(":shared"))
+            implementation(project(":data"))
+            implementation(project(":di"))
+            implementation(project(":navigation"))
         }
+        
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -107,4 +116,3 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-

@@ -26,6 +26,11 @@ kotlin {
         }
     }
 
+    // Add wasmJs target to data module
+    wasmJs {
+        browser()
+    }
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.ktor.android.client)
