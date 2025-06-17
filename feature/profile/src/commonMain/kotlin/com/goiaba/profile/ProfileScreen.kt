@@ -15,8 +15,8 @@ import com.goiaba.profile.components.AddressCard
 import com.goiaba.profile.components.AddressEditModal
 import com.goiaba.profile.components.AdvertCard
 import com.goiaba.profile.components.UserInfoCard
-import com.goiaba.profile.details.AddressDetailsScreen
-import com.goiaba.profile.details.AdvertDetailsScreen
+import com.goiaba.profile.modals.AddressDetailsModal
+import com.goiaba.profile.modals.AdvertDetailsModal
 import com.goiaba.shared.*
 import com.goiaba.shared.components.InfoCard
 import com.goiaba.shared.util.DisplayResult
@@ -37,10 +37,9 @@ fun ProfileScreen(
     val isUpdatingAddress by viewModel.isUpdatingAddress.collectAsState()
     val updateMessage by viewModel.updateMessage.collectAsState()
 
-    // State for detail screens
+    // State for modals
     var selectedAdvert by remember { mutableStateOf<com.goiaba.data.models.profile.Advert?>(null) }
     var selectedAddress by remember { mutableStateOf<com.goiaba.data.models.profile.Addresse?>(null) }
-    var addressListScreen by remember { mutableStateOf(null) }
 
     // State for add address modal
     var showAddAddressModal by remember { mutableStateOf(false) }
@@ -58,49 +57,6 @@ fun ProfileScreen(
             snackbarHostState.showSnackbar(message)
             viewModel.clearUpdateMessage()
         }
-    }
-
-    // Show detail screens when items are selected
-    selectedAdvert?.let { advert ->
-        AdvertDetailsScreen(
-            advert = advert,
-            navigateBack = { selectedAdvert = null }
-        )
-        return
-    }
-
-    selectedAdvert?.let { advert ->
-        AdvertDetailsScreen(
-            advert = advert,
-            navigateBack = { selectedAdvert = null }
-        )
-        return
-    }
-
-    selectedAddress?.let { address ->
-        AddressDetailsScreen(
-            address = address,
-            isLoading = isUpdatingAddress,
-            onUpdateAddress = { firstName, lastName, firstLineAddress, secondLineAddress, postCode, city, country, phoneNumber ->
-                viewModel.updateAddress(
-                    addressId = address.documentId,
-                    firstName = firstName,
-                    lastName = lastName,
-                    firstLineAddress = firstLineAddress,
-                    secondLineAddress = secondLineAddress,
-                    postCode = postCode,
-                    city = city,
-                    country = country,
-                    phoneNumber = phoneNumber
-                )
-            },
-            onDeleteAddress = {
-                viewModel.deleteAddress(address.documentId)
-                selectedAddress = null
-            },
-            navigateBack = { selectedAddress = null }
-        )
-        return
     }
 
     Box(
@@ -227,7 +183,6 @@ fun ProfileScreen(
                             }
                         },
                         onSuccess = { userResponse ->
-                            println("PPPPP $userResponse")
                             ProfileContent(
                                 user = userResponse,
                                 isUpdatingAddress = isUpdatingAddress,
@@ -259,8 +214,6 @@ fun ProfileScreen(
                                 )
 
                                 Spacer(modifier = Modifier.height(24.dp))
-
-
                             }
                         }
                     )
@@ -288,6 +241,42 @@ fun ProfileScreen(
                 showAddAddressModal = false
             }
         )
+
+        // Address Details Modal
+        AddressDetailsModal(
+            isVisible = selectedAddress != null,
+            address = selectedAddress,
+            isLoading = isUpdatingAddress,
+            onDismiss = { selectedAddress = null },
+            onUpdateAddress = { firstName, lastName, firstLineAddress, secondLineAddress, postCode, city, country, phoneNumber ->
+                selectedAddress?.let { address ->
+                    viewModel.updateAddress(
+                        addressId = address.documentId,
+                        firstName = firstName,
+                        lastName = lastName,
+                        firstLineAddress = firstLineAddress,
+                        secondLineAddress = secondLineAddress,
+                        postCode = postCode,
+                        city = city,
+                        country = country,
+                        phoneNumber = phoneNumber
+                    )
+                }
+            },
+            onDeleteAddress = {
+                selectedAddress?.let { address ->
+                    viewModel.deleteAddress(address.documentId)
+                    selectedAddress = null
+                }
+            }
+        )
+
+        // Advert Details Modal
+        AdvertDetailsModal(
+            isVisible = selectedAdvert != null,
+            advert = selectedAdvert,
+            onDismiss = { selectedAdvert = null }
+        )
     }
 }
 
@@ -303,7 +292,7 @@ private fun ProfileContent(
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-//         User Information Card
+        // User Information Card
         item {
             UserInfoCard(user = user)
         }
@@ -470,7 +459,7 @@ private fun ProfileContent(
             }
         }
 
-//         Refresh button at the bottom
+        // Refresh button at the bottom
         item {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
