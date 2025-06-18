@@ -16,6 +16,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.goiaba.data.models.profile.Addresse
 import com.goiaba.profile.components.AddressEditModal
+import com.goiaba.profile.components.DetailRow
+import com.goiaba.profile.utils.formatDate
 import com.goiaba.shared.*
 import org.jetbrains.compose.resources.painterResource
 
@@ -170,7 +172,7 @@ fun AddressDetailsModal(
                                     Spacer(modifier = Modifier.height(20.dp))
                                     
                                     // Address Information
-                                    AddressDetailRow(
+                                    DetailRow(
                                         icon = "🏠",
                                         label = "Street Address",
                                         value = buildString {
@@ -190,14 +192,14 @@ fun AddressDetailsModal(
                                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {
-                                            AddressDetailRow(
+                                            DetailRow(
                                                 icon = "🏙️",
                                                 label = "City",
                                                 value = address.city ?: "Not specified"
                                             )
                                         }
                                         Column(modifier = Modifier.weight(1f)) {
-                                            AddressDetailRow(
+                                            DetailRow(
                                                 icon = "📮",
                                                 label = "Postal Code",
                                                 value = address.postCode
@@ -207,7 +209,7 @@ fun AddressDetailsModal(
                                     
                                     Spacer(modifier = Modifier.height(16.dp))
                                     
-                                    AddressDetailRow(
+                                    DetailRow(
                                         icon = "🌍",
                                         label = "Country",
                                         value = address.country ?: "Not specified"
@@ -217,7 +219,7 @@ fun AddressDetailsModal(
                                     address.phoneNumber?.let { phone ->
                                         if (phone.isNotBlank()) {
                                             Spacer(modifier = Modifier.height(16.dp))
-                                            AddressDetailRow(
+                                            DetailRow(
                                                 icon = "📞",
                                                 label = "Phone Number",
                                                 value = phone
@@ -228,7 +230,7 @@ fun AddressDetailsModal(
                                     Spacer(modifier = Modifier.height(16.dp))
                                     
                                     // Document ID
-                                    AddressDetailRow(
+                                    DetailRow(
                                         icon = "📄",
                                         label = "Document ID",
                                         value = address.documentId
@@ -259,7 +261,7 @@ fun AddressDetailsModal(
                                         modifier = Modifier.padding(bottom = 16.dp)
                                     )
                                     
-                                    AddressDetailRow(
+                                    DetailRow(
                                         icon = "📅",
                                         label = "Created",
                                         value = formatDate(address.createdAt)
@@ -267,7 +269,7 @@ fun AddressDetailsModal(
                                     
                                     Spacer(modifier = Modifier.height(12.dp))
                                     
-                                    AddressDetailRow(
+                                    DetailRow(
                                         icon = "🔄",
                                         label = "Last Updated",
                                         value = formatDate(address.updatedAt)
@@ -275,7 +277,7 @@ fun AddressDetailsModal(
                                     
                                     Spacer(modifier = Modifier.height(12.dp))
                                     
-                                    AddressDetailRow(
+                                    DetailRow(
                                         icon = "📤",
                                         label = "Published",
                                         value = formatDate(address.publishedAt)
@@ -336,47 +338,5 @@ fun AddressDetailsModal(
                 showEditModal = false
             }
         )
-    }
-}
-
-@Composable
-private fun AddressDetailRow(
-    icon: String,
-    label: String,
-    value: String
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
-    ) {
-        Text(
-            text = icon,
-            fontSize = FontSize.REGULAR,
-            modifier = Modifier.padding(end = 12.dp, top = 2.dp)
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                fontSize = FontSize.SMALL,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                fontSize = FontSize.REGULAR,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-private fun formatDate(dateString: String): String {
-    return try {
-        // Extract date part and format it nicely
-        val datePart = dateString.take(10)
-        val timePart = dateString.substring(11, 19)
-        "$datePart at $timePart"
-    } catch (e: Exception) {
-        dateString
     }
 }

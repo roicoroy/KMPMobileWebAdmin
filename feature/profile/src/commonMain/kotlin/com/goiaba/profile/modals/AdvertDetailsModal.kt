@@ -15,10 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.goiaba.data.models.profile.Advert
+import com.goiaba.profile.components.DetailRow
+import com.goiaba.profile.utils.formatDate
 import com.goiaba.shared.*
 import org.jetbrains.compose.resources.painterResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvertDetailsModal(
     isVisible: Boolean,
@@ -250,47 +251,5 @@ fun AdvertDetailsModal(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun DetailRow(
-    icon: String,
-    label: String,
-    value: String
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
-    ) {
-        Text(
-            text = icon,
-            fontSize = FontSize.REGULAR,
-            modifier = Modifier.padding(end = 12.dp, top = 2.dp)
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                fontSize = FontSize.SMALL,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                fontSize = FontSize.REGULAR,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-private fun formatDate(dateString: String): String {
-    return try {
-        // Extract date part and format it nicely
-        val datePart = dateString.take(10)
-        val timePart = dateString.substring(11, 19)
-        "$datePart at $timePart"
-    } catch (e: Exception) {
-        dateString
     }
 }

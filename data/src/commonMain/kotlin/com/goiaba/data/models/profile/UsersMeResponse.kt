@@ -1,6 +1,8 @@
 package com.goiaba.data.models.profile
 
 
+import com.goiaba.data.models.profile.strapiUser.StrapiUser
+import com.goiaba.data.models.profile.strapiUser.StrapiUser.ProfileImage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -50,6 +52,8 @@ import kotlinx.serialization.Serializable
 */
 @Serializable
 data class UsersMeResponse(
+    @SerialName("profileImage")
+    val profileImage: StrapiUser.ProfileImage = ProfileImage(),
     @SerialName("addresses")
     val addresses: List<Addresse>,
     @SerialName("adverts")
@@ -66,8 +70,6 @@ data class UsersMeResponse(
     val email: String,
     @SerialName("id")
     val id: Int,
-//    @SerialName("professional")
-//    val professional: Boolean,
     @SerialName("provider")
     val provider: String,
     @SerialName("publishedAt")

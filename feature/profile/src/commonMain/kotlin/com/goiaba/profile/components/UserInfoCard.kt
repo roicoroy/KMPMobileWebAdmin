@@ -7,8 +7,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.goiaba.data.models.profile.UsersMeResponse
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
@@ -42,11 +45,17 @@ fun UserInfoCard(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Icon(
-                            painter = painterResource(Resources.Icon.Person),
-                            contentDescription = "User",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(30.dp)
+
+                        AsyncImage(
+                            model = user.profileImage.url,
+                            contentDescription = "Advert cover",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop,
+                            placeholder = painterResource(Resources.Image.Cat),
+                            error = painterResource(Resources.Image.Cat)
                         )
                     }
                 }
@@ -66,22 +75,7 @@ fun UserInfoCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                
-                // Professional badge
-//                if (user.professional) {
-//                    Surface(
-//                        color = MaterialTheme.colorScheme.secondaryContainer,
-//                        shape = RoundedCornerShape(20.dp)
-//                    ) {
-//                        Text(
-//                            text = "💼 Pro",
-//                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-//                            fontSize = FontSize.SMALL,
-//                            fontWeight = FontWeight.Medium,
-//                            color = MaterialTheme.colorScheme.onSecondaryContainer
-//                        )
-//                    }
-//                }
+
             }
             
             Spacer(modifier = Modifier.height(20.dp))

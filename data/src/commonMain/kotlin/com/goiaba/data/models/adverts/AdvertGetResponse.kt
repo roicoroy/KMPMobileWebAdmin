@@ -1,7 +1,7 @@
 package com.goiaba.data.models.adverts
 
 
-import com.goiaba.data.models.profile.StrapiUser
+import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
