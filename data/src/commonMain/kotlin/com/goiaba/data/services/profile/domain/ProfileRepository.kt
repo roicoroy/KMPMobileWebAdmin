@@ -7,12 +7,12 @@ import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.AddressUpdateResponse
 import com.goiaba.data.models.profile.UserUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateResponse
-import com.goiaba.data.models.profile.UsersMeResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.shared.util.RequestState
 import kotlinx.coroutines.flow.Flow
 
 interface ProfileRepository {
-    fun getUsersMe(): Flow<RequestState<UsersMeResponse>>
+    fun getUsersMe(): Flow<RequestState<StrapiUser>>
     suspend fun createAddress(request: AddressCreateRequest): Flow<RequestState<AddressCreateResponse>>
     suspend fun updateAddress(addressId: String, request: AddressUpdateRequest): Flow<RequestState<AddressUpdateResponse>>
     suspend fun deleteAddress(addressId: String): Flow<RequestState<Boolean>>

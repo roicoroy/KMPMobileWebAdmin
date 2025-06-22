@@ -5,8 +5,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import com.goiaba.data.models.adverts.AdvertGetResponse // Make sure this import is correct based on your project structure
-import com.goiaba.data.models.profile.UsersMeResponse
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
 
 @Composable

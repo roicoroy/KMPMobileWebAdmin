@@ -6,10 +6,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class StrapiUser(
-    @SerialName("addresses")
-    val addresses: List<Addresse> = listOf(),
-    @SerialName("adverts")
-    val adverts: List<Advert> = listOf(),
     @SerialName("blocked")
     val blocked: Boolean = false,
     @SerialName("confirmed")
@@ -22,49 +18,37 @@ data class StrapiUser(
     val email: String = "",
     @SerialName("id")
     val id: Int = 0,
-    @SerialName("profileImage")
-    val profileImage: ProfileImage = ProfileImage(),
+    @SerialName("profile")
+    val profile: Profile = Profile(),
     @SerialName("provider")
     val provider: String = "",
     @SerialName("publishedAt")
     val publishedAt: String = "",
+    @SerialName("role")
+    val role: Role = Role(),
     @SerialName("updatedAt")
     val updatedAt: String = "",
     @SerialName("username")
     val username: String = ""
 ) {
     @Serializable
-    data class Addresse(
-        @SerialName("city")
-        val city: String = "",
-        @SerialName("country")
-        val country: String = "",
+    data class Profile(
         @SerialName("createdAt")
         val createdAt: String = "",
+        @SerialName("dob")
+        val dob: String = "",
         @SerialName("documentId")
         val documentId: String = "",
-        @SerialName("first_line_address")
-        val firstLineAddress: String = "",
-        @SerialName("first_name")
-        val firstName: String = "",
         @SerialName("id")
         val id: Int = 0,
-        @SerialName("last_name")
-        val lastName: String = "",
-        @SerialName("phone_number")
-        val phoneNumber: String? = null,
-        @SerialName("post_code")
-        val postCode: String = "",
         @SerialName("publishedAt")
         val publishedAt: String = "",
-        @SerialName("second_line_address")
-        val secondLineAddress: String = "",
         @SerialName("updatedAt")
         val updatedAt: String = ""
     )
 
     @Serializable
-    data class Advert(
+    data class Role(
         @SerialName("createdAt")
         val createdAt: String = "",
         @SerialName("description")
@@ -73,103 +57,13 @@ data class StrapiUser(
         val documentId: String = "",
         @SerialName("id")
         val id: Int = 0,
+        @SerialName("name")
+        val name: String = "",
         @SerialName("publishedAt")
         val publishedAt: String = "",
-        @SerialName("slug")
-        val slug: String = "",
-        @SerialName("title")
-        val title: String = "",
+        @SerialName("type")
+        val type: String = "",
         @SerialName("updatedAt")
         val updatedAt: String = ""
     )
-
-    @Serializable
-    data class ProfileImage(
-        @SerialName("alternativeText")
-        val alternativeText: String? = null,
-        @SerialName("caption")
-        val caption: String? = null,
-        @SerialName("createdAt")
-        val createdAt: String = "",
-        @SerialName("documentId")
-        val documentId: String = "",
-        @SerialName("ext")
-        val ext: String = "",
-        @SerialName("formats")
-        val formats: Formats = Formats(),
-        @SerialName("hash")
-        val hash: String = "",
-        @SerialName("height")
-        val height: Int = 0,
-        @SerialName("id")
-        val id: Int = 0,
-        @SerialName("mime")
-        val mime: String = "",
-        @SerialName("name")
-        val name: String = "",
-        @SerialName("previewUrl")
-        val previewUrl: String? = null,
-        @SerialName("provider")
-        val provider: String = "",
-        @SerialName("provider_metadata")
-        val providerMetadata: ProviderMetadata = ProviderMetadata(),
-        @SerialName("publishedAt")
-        val publishedAt: String = "",
-        @SerialName("size")
-        val size: Double = 0.0,
-        @SerialName("updatedAt")
-        val updatedAt: String = "",
-        @SerialName("url")
-        val url: String = "",
-        @SerialName("width")
-        val width: Int = 0
-    ) {
-        @Serializable
-        data class Formats(
-            @SerialName("thumbnail")
-            val thumbnail: Thumbnail = Thumbnail()
-        ) {
-            @Serializable
-            data class Thumbnail(
-                @SerialName("ext")
-                val ext: String = "",
-                @SerialName("hash")
-                val hash: String = "",
-                @SerialName("height")
-                val height: Int = 0,
-                @SerialName("mime")
-                val mime: String = "",
-                @SerialName("name")
-                val name: String = "",
-                @SerialName("path")
-                val path: String? = null,
-                @SerialName("provider_metadata")
-                val providerMetadata: ProviderMetadata = ProviderMetadata(),
-                @SerialName("size")
-                val size: Double = 0.0,
-                @SerialName("sizeInBytes")
-                val sizeInBytes: Int = 0,
-                @SerialName("url")
-                val url: String = "",
-                @SerialName("width")
-                val width: Int = 0
-            ) {
-                @Serializable
-                data class ProviderMetadata(
-                    @SerialName("public_id")
-                    val publicId: String = "",
-                    @SerialName("resource_type")
-                    val resourceType: String = ""
-                )
-            }
-        }
-
-        @Serializable
-        data class ProviderMetadata(
-            @SerialName("public_id")
-            val publicId: String = "",
-            @SerialName("resource_type")
-            val resourceType: String = ""
-        )
-    }
 }

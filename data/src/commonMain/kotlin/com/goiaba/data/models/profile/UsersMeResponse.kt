@@ -1,8 +1,6 @@
 package com.goiaba.data.models.profile
 
 
-import com.goiaba.data.models.profile.strapiUser.StrapiUser
-import com.goiaba.data.models.profile.strapiUser.StrapiUser.ProfileImage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -50,32 +48,32 @@ import kotlinx.serialization.Serializable
   ]
 }
 */
-@Serializable
-data class UsersMeResponse(
-    @SerialName("profileImage")
-    val profileImage: StrapiUser.ProfileImage = ProfileImage(),
-    @SerialName("addresses")
-    val addresses: List<Addresse>,
-    @SerialName("adverts")
-    val adverts: List<Advert>,
-    @SerialName("blocked")
-    val blocked: Boolean,
-    @SerialName("confirmed")
-    val confirmed: Boolean,
-    @SerialName("createdAt")
-    val createdAt: String,
-    @SerialName("documentId")
-    val documentId: String,
-    @SerialName("email")
-    val email: String,
-    @SerialName("id")
-    val id: Int,
-    @SerialName("provider")
-    val provider: String,
-    @SerialName("publishedAt")
-    val publishedAt: String,
-    @SerialName("updatedAt")
-    val updatedAt: String,
-    @SerialName("username")
-    val username: String
-)
+//@Serializable
+//data class UsersMeResponse2222(
+//    @SerialName("profileImage")
+//    val profileImage: StrapiUser.ProfileImage = ProfileImage(),
+//    @SerialName("addresses")
+//    val addresses: List<Addresse>,
+//    @SerialName("adverts")
+//    val adverts: List<Advert>,
+//    @SerialName("blocked")
+//    val blocked: Boolean,
+//    @SerialName("confirmed")
+//    val confirmed: Boolean,
+//    @SerialName("createdAt")
+//    val createdAt: String,
+//    @SerialName("documentId")
+//    val documentId: String,
+//    @SerialName("email")
+//    val email: String,
+//    @SerialName("id")
+//    val id: Int,
+//    @SerialName("provider")
+//    val provider: String,
+//    @SerialName("publishedAt")
+//    val publishedAt: String,
+//    @SerialName("updatedAt")
+//    val updatedAt: String,
+//    @SerialName("username")
+//    val username: String
+//)

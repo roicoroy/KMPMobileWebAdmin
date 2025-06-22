@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.goiaba.data.models.profile.UsersMeResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.profile.components.AddressCard
 import com.goiaba.profile.components.AddressEditModal
 import com.goiaba.profile.components.AdvertCard
@@ -282,7 +282,7 @@ fun ProfileScreen(
 
 @Composable
 private fun ProfileContent(
-    user: UsersMeResponse,
+    user: StrapiUser,
     isUpdatingAddress: Boolean,
     onRefresh: () -> Unit,
     onAdvertClick: (com.goiaba.data.models.profile.Advert) -> Unit,
@@ -306,12 +306,12 @@ private fun ProfileContent(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Addresses (${user.addresses.size})",
-                    fontSize = FontSize.LARGE,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary
-                )
+//                Text(
+//                    text = "Addresses (${user.addresses.size})",
+//                    fontSize = FontSize.LARGE,
+//                    fontWeight = FontWeight.Bold,
+//                    color = TextPrimary
+//                )
 
                 Button(
                     onClick = onAddAddressClick,
@@ -350,114 +350,114 @@ private fun ProfileContent(
             }
         }
 
-        if (user.addresses.isNotEmpty()) {
-            items(user.addresses) { address ->
-                AddressCard(
-                    address = address,
-                    onAddressClick = onAddressClick
-                )
-            }
-        } else {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "🏠",
-                            fontSize = FontSize.EXTRA_LARGE
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "No Addresses Yet",
-                            fontSize = FontSize.MEDIUM,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Add your first address to get started",
-                            fontSize = FontSize.REGULAR,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = onAddAddressClick,
-                            enabled = !isUpdatingAddress
-                        ) {
-                            Text("Add Address")
-                        }
-                    }
-                }
-            }
-        }
-
-        // Adverts Section
-        if (user.adverts.isNotEmpty()) {
-            item {
-                Text(
-                    text = "My Adverts (${user.adverts.size})",
-                    fontSize = FontSize.LARGE,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-
-            items(user.adverts) { advert ->
-                AdvertCard(
-                    advert = advert,
-                    onAdvertClick = onAdvertClick
-                )
-            }
-        }
-
-        // Empty states
-        if (user.addresses.isEmpty() && user.adverts.isEmpty()) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "📝",
-                            fontSize = FontSize.EXTRA_LARGE
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Complete Your Profile",
-                            fontSize = FontSize.MEDIUM,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Add addresses and create adverts to get started",
-                            fontSize = FontSize.REGULAR,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
+//        if (user.addresses.isNotEmpty()) {
+//            items(user.addresses) { address ->
+//                AddressCard(
+//                    address = address,
+//                    onAddressClick = onAddressClick
+//                )
+//            }
+//        } else {
+//            item {
+//                Card(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    colors = CardDefaults.cardColors(
+//                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+//                    ),
+//                    shape = RoundedCornerShape(12.dp)
+//                ) {
+//                    Column(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(24.dp),
+//                        horizontalAlignment = Alignment.CenterHorizontally
+//                    ) {
+//                        Text(
+//                            text = "🏠",
+//                            fontSize = FontSize.EXTRA_LARGE
+//                        )
+//                        Spacer(modifier = Modifier.height(16.dp))
+//                        Text(
+//                            text = "No Addresses Yet",
+//                            fontSize = FontSize.MEDIUM,
+//                            fontWeight = FontWeight.Bold,
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                        Text(
+//                            text = "Add your first address to get started",
+//                            fontSize = FontSize.REGULAR,
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
+//                        Spacer(modifier = Modifier.height(16.dp))
+//                        Button(
+//                            onClick = onAddAddressClick,
+//                            enabled = !isUpdatingAddress
+//                        ) {
+//                            Text("Add Address")
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        // Adverts Section
+//        if (user.adverts.isNotEmpty()) {
+//            item {
+//                Text(
+//                    text = "My Adverts (${user.adverts.size})",
+//                    fontSize = FontSize.LARGE,
+//                    fontWeight = FontWeight.Bold,
+//                    color = TextPrimary,
+//                    modifier = Modifier.padding(vertical = 8.dp)
+//                )
+//            }
+//
+//            items(user.adverts) { advert ->
+//                AdvertCard(
+//                    advert = advert,
+//                    onAdvertClick = onAdvertClick
+//                )
+//            }
+//        }
+//
+//        // Empty states
+//        if (user.addresses.isEmpty() && user.adverts.isEmpty()) {
+//            item {
+//                Card(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    colors = CardDefaults.cardColors(
+//                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+//                    ),
+//                    shape = RoundedCornerShape(12.dp)
+//                ) {
+//                    Column(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(24.dp),
+//                        horizontalAlignment = Alignment.CenterHorizontally
+//                    ) {
+//                        Text(
+//                            text = "📝",
+//                            fontSize = FontSize.EXTRA_LARGE
+//                        )
+//                        Spacer(modifier = Modifier.height(16.dp))
+//                        Text(
+//                            text = "Complete Your Profile",
+//                            fontSize = FontSize.MEDIUM,
+//                            fontWeight = FontWeight.Bold,
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                        Text(
+//                            text = "Add addresses and create adverts to get started",
+//                            fontSize = FontSize.REGULAR,
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
+//                    }
+//                }
+//            }
+//        }
 
         // Refresh button at the bottom
         item {

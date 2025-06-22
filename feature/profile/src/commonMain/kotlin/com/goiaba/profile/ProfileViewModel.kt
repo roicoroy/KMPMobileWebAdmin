@@ -5,8 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.goiaba.data.models.profile.AddressCreateRequest
 import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateRequest
-import com.goiaba.data.models.profile.UsersMeResponse
-import com.goiaba.data.networking.ApiClient
+import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.services.profile.domain.ProfileRepository
 import com.goiaba.shared.util.RequestState
 import com.goiaba.shared.util.TokenManager
@@ -27,8 +26,8 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     private val _userEmail = MutableStateFlow(TokenManager.getUserEmail())
     val userEmail: StateFlow<String?> = _userEmail.asStateFlow()
 
-    private val _user = MutableStateFlow<RequestState<UsersMeResponse>>(RequestState.Loading)
-    val user: StateFlow<RequestState<UsersMeResponse>> = _user.asStateFlow()
+    private val _user = MutableStateFlow<RequestState<StrapiUser>>(RequestState.Loading)
+    val user: StateFlow<RequestState<StrapiUser>> = _user.asStateFlow()
 
     // Address editing state
     private val _isUpdatingAddress = MutableStateFlow(false)
@@ -220,12 +219,12 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                             // Step 2: Update user to remove the address relation
                             val currentUser = _user.value.getSuccessDataOrNull()
                             if (currentUser != null) {
-                                val updatedAddressIds = currentUser.addresses
-                                    .filter { it.documentId != addressId }
-                                    .map { it.documentId }
-
-                                // Step 3: Update user with removed address relation
-                                updateUserAddressesAfterDelete(currentUser.documentId, updatedAddressIds)
+//                                val updatedAddressIds = currentUser.addresses
+//                                    .filter { it.documentId != addressId }
+//                                    .map { it.documentId }
+//
+//                                // Step 3: Update user with removed address relation
+//                                updateUserAddressesAfterDelete(currentUser.documentId, updatedAddressIds)
                             } else {
                                 _isUpdatingAddress.value = false
                                 _updateMessage.value = "Address deleted successfully!"

@@ -12,14 +12,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.goiaba.data.models.profile.UsersMeResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun UserInfoCard(
-    user: UsersMeResponse
+    user: StrapiUser
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -46,17 +46,17 @@ fun UserInfoCard(
                         modifier = Modifier.fillMaxSize()
                     ) {
 
-                        AsyncImage(
-                            model = user.profileImage.url,
-                            contentDescription = "Advert cover",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop,
-                            placeholder = painterResource(Resources.Image.Cat),
-                            error = painterResource(Resources.Image.Cat)
-                        )
+//                        AsyncImage(
+//                            model = user.profileImage.url,
+//                            contentDescription = "Advert cover",
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .height(200.dp)
+//                                .clip(RoundedCornerShape(8.dp)),
+//                            contentScale = ContentScale.Crop,
+//                            placeholder = painterResource(Resources.Image.Cat),
+//                            error = painterResource(Resources.Image.Cat)
+//                        )
                     }
                 }
                 
@@ -169,21 +169,21 @@ fun UserInfoCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatisticCard(
-                    icon = "🏠",
-                    count = user.addresses.size,
-                    label = "Addresses",
-                    modifier = Modifier.weight(1f)
-                )
+//                StatisticCard(
+//                    icon = "🏠",
+//                    count = user.addresses.size,
+//                    label = "Addresses",
+//                    modifier = Modifier.weight(1f)
+//                )
                 
                 Spacer(modifier = Modifier.width(12.dp))
                 
-                StatisticCard(
-                    icon = "📢",
-                    count = user.adverts.size,
-                    label = "Adverts",
-                    modifier = Modifier.weight(1f)
-                )
+//                StatisticCard(
+//                    icon = "📢",
+//                    count = user.adverts.size,
+//                    label = "Adverts",
+//                    modifier = Modifier.weight(1f)
+//                )
             }
         }
     }

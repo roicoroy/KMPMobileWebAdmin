@@ -8,7 +8,7 @@ import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.AddressUpdateResponse
 import com.goiaba.data.models.profile.UserUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateResponse
-import com.goiaba.data.models.profile.UsersMeResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.networking.ApiClient
 import com.goiaba.data.networking.apiUsersMe
 import com.goiaba.shared.util.RequestState
@@ -18,12 +18,12 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 
 class ProfileService {
-    suspend fun getUsersMe(): RequestState<UsersMeResponse> {
+    suspend fun getUsersMe(): RequestState<StrapiUser> {
         return try {
             val response: HttpResponse = ApiClient.httpClient.get(apiUsersMe)
             when (response.status) {
                 HttpStatusCode.OK -> {
-                    val usersMeResponseHttp = response.body<UsersMeResponse>()
+                    val usersMeResponseHttp = response.body<StrapiUser>()
                     RequestState.Success(usersMeResponseHttp)
                 }
 

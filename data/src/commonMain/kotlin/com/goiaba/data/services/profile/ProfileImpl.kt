@@ -7,7 +7,7 @@ import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.AddressUpdateResponse
 import com.goiaba.data.models.profile.UserUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateResponse
-import com.goiaba.data.models.profile.UsersMeResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.services.profile.domain.ProfileRepository
 import com.goiaba.shared.util.RequestState
 import kotlinx.coroutines.delay
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.flow
 class ProfileImpl : ProfileRepository {
     private val apiService = ProfileService()
 
-    override fun getUsersMe(): Flow<RequestState<UsersMeResponse>> = flow {
+    override fun getUsersMe(): Flow<RequestState<StrapiUser>> = flow {
         emit(RequestState.Loading)
 
         try {
