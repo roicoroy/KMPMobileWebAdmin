@@ -87,7 +87,7 @@ fun ProfileScreen(
                                 onClick = { viewModel.refreshProfile() }
                             ) {
                                 Icon(
-                                    painter = painterResource(Resources.Icon.Search),
+                                    painter = painterResource(Resources.Icon.Refresh),
                                     contentDescription = "Refresh",
                                     tint = IconPrimary
                                 )

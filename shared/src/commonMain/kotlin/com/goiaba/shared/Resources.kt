@@ -1,6 +1,7 @@
 package com.goiaba.shared
 
 import kmpmobilewebadmin.shared.generated.resources.Res
+import kmpmobilewebadmin.shared.generated.resources.arrows_rotate_solid
 import kmpmobilewebadmin.shared.generated.resources.plus
 import kmpmobilewebadmin.shared.generated.resources.back_arrow
 import kmpmobilewebadmin.shared.generated.resources.book
@@ -69,6 +70,7 @@ import kmpmobilewebadmin.shared.generated.resources.dog
 
 object Resources {
     object Icon {
+        val Refresh = Res.drawable.arrows_rotate_solid
         val Plus = Res.drawable.plus
         val Minus = Res.drawable.minus
         val SignIn = Res.drawable.log_in
