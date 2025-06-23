@@ -36,10 +36,10 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     private val _userEmail = MutableStateFlow(TokenManager.getUserEmail())
     val userEmail: StateFlow<String?> = _userEmail.asStateFlow()
 
-    private val _user = MutableStateFlow<RequestState<StrapiUser>>(RequestState.Loading)
+    private val _user = MutableStateFlow<RequestState<StrapiUser>>(RequestState.Idle)
     val user: StateFlow<RequestState<StrapiUser>> = _user.asStateFlow()
 
-    private val _strapiProfile = MutableStateFlow<RequestState<StrapiProfile>>(RequestState.Loading)
+    private val _strapiProfile = MutableStateFlow<RequestState<StrapiProfile>>(RequestState.Idle)
     val strapiProfile: StateFlow<RequestState<StrapiProfile>> = _strapiProfile.asStateFlow()
 
     // Address editing state
@@ -62,23 +62,40 @@ class ProfileViewModel : ViewModel(), KoinComponent {
 
     private fun loadUserProfile() {
         viewModelScope.launch {
-            _strapiProfile.value = RequestState.Loading
-            _user.value = RequestState.Loading
-
             try {
-                profileRepository.getUsersMe().collect { result ->
-                    _user.value = result
+                _user.value = RequestState.Loading
+                _strapiProfile.value = RequestState.Loading
+
+                // Load user data first
+                profileRepository.getUsersMe().collect { userResult ->
+                    _user.value = userResult
+                    
+                    when (userResult) {
+                        is RequestState.Success -> {
+                            _userRole.value = userResult.data.role.name
+                            
+                            // Check if user has a profile
+                            if (userResult.data.profile.documentId.isNotEmpty()) {
+                                // Load the profile data
+                                profileRepository.getUserProfile(userResult.data.profile.documentId).collect { profileResult ->
+                                    _strapiProfile.value = profileResult
+                                }
+                            } else {
+                                // User doesn't have a profile yet
+                                _strapiProfile.value = RequestState.Error("No profile found for this user")
+                            }
+                        }
+                        is RequestState.Error -> {
+                            _strapiProfile.value = RequestState.Error("Failed to load user data: ${userResult.message}")
+                        }
+                        else -> {
+                            // Keep loading state
+                        }
+                    }
                 }
-
-                _userRole.value = _user.value.getSuccessData().role.name
-                val userProfiledocId = _user.value.getSuccessData().profile.documentId
-
-                profileRepository.getUserProfile(userProfiledocId).collect { result ->
-                    _strapiProfile.value = result
-                }
-
             } catch (e: Exception) {
                 _user.value = RequestState.Error("Failed to load profile: ${e.message}")
+                _strapiProfile.value = RequestState.Error("Failed to load profile: ${e.message}")
             }
         }
     }
@@ -126,12 +143,11 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     fun updateUserProfile(uploadedFileId: String) {
         viewModelScope.launch {
             try {
-                val userProfiledocId =
-                    _user.value.getSuccessData().profile.documentId
-                if (userProfiledocId.isNotEmpty()) {
+                val currentUser = _user.value.getSuccessDataOrNull()
+                if (currentUser != null && currentUser.profile.documentId.isNotEmpty()) {
                     profileRepository
                         .updateProfile(
-                            userProfiledocId,
+                            currentUser.profile.documentId,
                             UserProfilePutResquest(
                                 data = UserProfilePutResquest.Data(
                                     avatar = uploadedFileId,
@@ -148,18 +164,16 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                             }
 
                             is RequestState.Error -> {
-                                _updateMessage.value = "Image upload failed: ${result.message}"
+                                _updateMessage.value = "Profile update failed: ${result.message}"
                             }
 
                             else -> {
-                                _updateMessage.value = "Image upload failed: Unknown error"
+                                _updateMessage.value = "Profile update failed: Unknown error"
                             }
                         }
                     }
-
-
-
-
+                } else {
+                    _updateMessage.value = "No user profile found to update"
                 }
             } catch (e: Exception) {
                 _updateMessage.value = "ERROR: ${e.message}"
@@ -337,20 +351,9 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                         }
 
                         is RequestState.Success -> {
-                            // Step 2: Update user to remove the address relation
-                            val currentUser = _user.value.getSuccessDataOrNull()
-                            if (currentUser != null) {
-//                                val updatedAddressIds = currentUser.addresses
-//                                    .filter { it.documentId != addressId }
-//                                    .map { it.documentId }
-//
-//                                // Step 3: Update user with removed address relation
-//                                updateUserAddressesAfterDelete(currentUser.documentId, updatedAddressIds)
-                            } else {
-                                _isUpdatingAddress.value = false
-                                _updateMessage.value = "Address deleted successfully!"
-                                loadUserProfile()
-                            }
+                            _isUpdatingAddress.value = false
+                            _updateMessage.value = "Address deleted successfully!"
+                            loadUserProfile()
                         }
 
                         is RequestState.Error -> {
@@ -381,7 +384,7 @@ class ProfileViewModel : ViewModel(), KoinComponent {
         _userEmail.value = TokenManager.getUserEmail()
 
         // Load profile if user is logged in
-        if (_isLoggedIn.value && _user.value is RequestState.Idle) {
+        if (_isLoggedIn.value) {
             loadUserProfile()
         }
     }

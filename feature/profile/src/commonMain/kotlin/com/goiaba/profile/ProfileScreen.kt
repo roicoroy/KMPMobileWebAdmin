@@ -62,13 +62,13 @@ fun ProfileScreen(
                                 fontSize = FontSize.LARGE,
                                 color = TextPrimary
                             )
-//                            if (isLoggedIn && userEmail != null) {
-//                                Text(
-//                                    text = userEmail,
-//                                    fontSize = FontSize.SMALL,
-//                                    color = TextPrimary.copy(alpha = 0.7f)
-//                                )
-//                            }
+                            if (isLoggedIn && userEmail != null) {
+                                Text(
+                                    text = userEmail!!,
+                                    fontSize = FontSize.SMALL,
+                                    color = TextPrimary.copy(alpha = 0.7f)
+                                )
+                            }
                         }
                     },
                     navigationIcon = {
@@ -153,7 +153,17 @@ fun ProfileScreen(
                                             .height(200.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CircularProgressIndicator()
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            CircularProgressIndicator()
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Text(
+                                                text = "Loading user data...",
+                                                fontSize = FontSize.REGULAR,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
                                 }
                             },
@@ -184,6 +194,12 @@ fun ProfileScreen(
                                             color = MaterialTheme.colorScheme.onErrorContainer,
                                             fontSize = FontSize.SMALL
                                         )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        TextButton(
+                                            onClick = { viewModel.refreshProfile() }
+                                        ) {
+                                            Text("Retry")
+                                        }
                                     }
                                 }
                             }
@@ -204,7 +220,17 @@ fun ProfileScreen(
                                             .height(200.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CircularProgressIndicator()
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            CircularProgressIndicator()
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Text(
+                                                text = "Loading profile data...",
+                                                fontSize = FontSize.REGULAR,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
                                 }
                             },
@@ -240,6 +266,12 @@ fun ProfileScreen(
                                             color = MaterialTheme.colorScheme.onErrorContainer,
                                             fontSize = FontSize.SMALL
                                         )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        TextButton(
+                                            onClick = { viewModel.refreshProfile() }
+                                        ) {
+                                            Text("Retry")
+                                        }
                                     }
                                 }
                             }
