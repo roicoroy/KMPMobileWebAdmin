@@ -64,13 +64,13 @@ fun ProfileAdvertsListScreen(
                                 fontSize = FontSize.LARGE,
                                 color = TextPrimary
                             )
-                            if (isLoggedIn && userEmail != null) {
-                                Text(
-                                    text = userEmail,
-                                    fontSize = FontSize.SMALL,
-                                    color = TextPrimary.copy(alpha = 0.7f)
-                                )
-                            }
+//                            if (isLoggedIn && userEmail != null) {
+//                                Text(
+//                                    text = userEmail,
+//                                    fontSize = FontSize.SMALL,
+//                                    color = TextPrimary.copy(alpha = 0.7f)
+//                                )
+//                            }
                         }
                     },
                     navigationIcon = {
@@ -242,12 +242,12 @@ fun ProfileAdvertsListScreen(
                                     }
                                 }
 
-                                items(profileData.data.adverts) { advert ->
-                                    AdvertCard(
-                                        advert = advert,
-                                        onAdvertClick = { selectedAdvert = it }
-                                    )
-                                }
+//                                items(profileData.data.adverts) { advert ->
+//                                    AdvertCard(
+//                                        advert = advert,
+//                                        onAdvertClick = { selectedAdvert = it }
+//                                    )
+//                                }
                                 
                                 // Add some bottom padding
                                 item {

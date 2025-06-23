@@ -33,7 +33,7 @@ fun ProfileAddressListScreen(
     val updateMessage by viewModel.updateMessage.collectAsState()
 
     // Modal state
-    var selectedAddress by remember { mutableStateOf<com.goiaba.data.models.profile.Addresse?>(null) }
+    var selectedAddress by remember { mutableStateOf<com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Addresse?>(null) }
     var showAddAddressModal by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -68,7 +68,7 @@ fun ProfileAddressListScreen(
                             )
                             if (isLoggedIn && userEmail != null) {
                                 Text(
-                                    text = userEmail,
+                                    text = userEmail!!,
                                     fontSize = FontSize.SMALL,
                                     color = TextPrimary.copy(alpha = 0.7f)
                                 )

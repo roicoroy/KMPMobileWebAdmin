@@ -62,13 +62,13 @@ fun ProfileScreen(
                                 fontSize = FontSize.LARGE,
                                 color = TextPrimary
                             )
-                            if (isLoggedIn && userEmail != null) {
-                                Text(
-                                    text = userEmail,
-                                    fontSize = FontSize.SMALL,
-                                    color = TextPrimary.copy(alpha = 0.7f)
-                                )
-                            }
+//                            if (isLoggedIn && userEmail != null) {
+//                                Text(
+//                                    text = userEmail,
+//                                    fontSize = FontSize.SMALL,
+//                                    color = TextPrimary.copy(alpha = 0.7f)
+//                                )
+//                            }
                         }
                     },
                     navigationIcon = {

@@ -24,7 +24,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun AddressDetailsModal(
     isVisible: Boolean,
-    address: Addresse?,
+    address: com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Addresse?,
     isLoading: Boolean = false,
     onDismiss: () -> Unit,
     onUpdateAddress: (

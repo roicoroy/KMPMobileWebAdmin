@@ -90,12 +90,12 @@ kotlin {
 
 android {
     namespace = "com.goiaba"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.goiaba"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk = 33
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }

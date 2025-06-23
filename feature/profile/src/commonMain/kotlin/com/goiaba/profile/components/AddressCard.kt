@@ -16,8 +16,8 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun AddressCard(
-    address: Addresse,
-    onAddressClick: ((Addresse) -> Unit)? = null
+    address: com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Addresse,
+    onAddressClick: ((com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Addresse) -> Unit)? = null
 ) {
     Card(
         modifier = Modifier

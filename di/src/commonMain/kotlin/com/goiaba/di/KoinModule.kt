@@ -15,8 +15,6 @@ import com.goiaba.feature.HomeGraphViewModel
 import com.goiaba.feature.auth.login.LoginViewModel
 import com.goiaba.feature.auth.register.RegisterViewModel
 import com.goiaba.home.advert.details.AdvertDetailsViewModel
-import com.goiaba.logger.LoggerViewModel
-import com.goiaba.logger.details.LoggerDetailsViewModel
 import com.goiaba.profile.ProfileViewModel
 import com.goiaba.shared.util.IntentHandler
 import org.koin.core.KoinApplication
@@ -34,8 +32,6 @@ val sharedModule = module {
     viewModelOf(::HomeGraphViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::RegisterViewModel)
-    viewModelOf(::LoggerViewModel)
-    viewModelOf(::LoggerDetailsViewModel)
     viewModelOf(::AdvertsViewModel)
     viewModelOf(::AdvertDetailsViewModel)
     viewModelOf(::ProfileViewModel)

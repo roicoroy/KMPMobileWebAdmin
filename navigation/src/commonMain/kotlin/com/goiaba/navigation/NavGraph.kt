@@ -9,13 +9,10 @@ import com.goiaba.feature.HomeGraphScreen
 import com.goiaba.feature.auth.login.LoginScreen
 import com.goiaba.feature.auth.register.RegisterScreen
 import com.goiaba.home.advert.details.AdvertDetailsScreen
-import com.goiaba.logger.LoggerScreen
-import com.goiaba.logger.details.LoggerDetailsScreen
 import com.goiaba.profile.ProfileAddressListScreen
 import com.goiaba.profile.ProfileAdvertsListScreen
 import com.goiaba.profile.ProfileScreen
 import com.goiaba.shared.navigation.Screen
-import com.goiaba.shared.navigation.Screen.LoggerScreen
 
 @Composable
 fun SetupNavGraph(startDestination: Screen = Screen.HomeGraph) {
@@ -121,34 +118,6 @@ fun SetupNavGraph(startDestination: Screen = Screen.HomeGraph) {
                 },
                 navigateToLogin = {
                     navController.popBackStack()
-                }
-            )
-        }
-        composable<LoggerScreen> {
-            LoggerScreen(
-                navigateToDetails = { loggerId ->
-                    navController.navigate(Screen.LoggerDetails(id = loggerId))
-                },
-                navigateToHome = {
-                    navController.navigate(Screen.HomeGraph) {
-                        popUpTo(Screen.HomeGraph) {
-                            inclusive = true
-                        }
-                    }
-                },
-            )
-        }
-        composable<Screen.LoggerDetails> {
-            LoggerDetailsScreen(
-                navigateBack = {
-                    navController.popBackStack()
-                },
-                navigateToLoggerList = {
-                    navController.navigate(Screen.LoggerScreen) {
-                        popUpTo(Screen.LoggerScreen) {
-                            inclusive = true
-                        }
-                    }
                 }
             )
         }

@@ -53,8 +53,6 @@ kotlin {
             implementation(project(":feature:adverts:advert-details"))
             implementation(project(path = ":feature:auth:login"))
             implementation(project(path = ":feature:auth:register"))
-            implementation(project(path = ":feature:logger"))
-            implementation(project(path = ":feature:logger:details"))
         }
     }
 }

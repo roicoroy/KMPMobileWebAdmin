@@ -27,7 +27,7 @@ import com.goiaba.shared.FontSize
 @Composable
 fun AddressEditModal(
     isVisible: Boolean,
-    address: Addresse?,
+    address: com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Addresse?,
     isLoading: Boolean = false,
     onDismiss: () -> Unit,
     onSave: (
