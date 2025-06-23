@@ -11,7 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.goiaba.profile.components.AdvertCard
+import com.goiaba.profile.modals.AdvertCreateModal
 import com.goiaba.profile.modals.AdvertDetailsModal
+import com.goiaba.profile.modals.AdvertEditModal
 import com.goiaba.shared.*
 import com.goiaba.shared.components.InfoCard
 import com.goiaba.shared.util.DisplayResult
@@ -28,16 +30,20 @@ fun ProfileAdvertsListScreen(
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val userEmail by viewModel.userEmail.collectAsState()
     val strapiProfile by viewModel.strapiProfile.collectAsState()
+    val categories by viewModel.categories.collectAsState()
+    val isUpdatingAdvert by viewModel.isUpdatingAdvert.collectAsState()
     val updateMessage by viewModel.updateMessage.collectAsState()
 
     // Modal state
     var selectedAdvert by remember { mutableStateOf<com.goiaba.data.models.profile.Advert?>(null) }
     var showAddAdvertModal by remember { mutableStateOf(false) }
+    var showEditAdvertModal by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.updateAuthState()
+        viewModel.loadCategories()
     }
 
     // Show update messages
@@ -64,13 +70,13 @@ fun ProfileAdvertsListScreen(
                                 fontSize = FontSize.LARGE,
                                 color = TextPrimary
                             )
-//                            if (isLoggedIn && userEmail != null) {
-//                                Text(
-//                                    text = userEmail,
-//                                    fontSize = FontSize.SMALL,
-//                                    color = TextPrimary.copy(alpha = 0.7f)
-//                                )
-//                            }
+                            if (isLoggedIn && userEmail != null) {
+                                Text(
+                                    text = userEmail!!,
+                                    fontSize = FontSize.SMALL,
+                                    color = TextPrimary.copy(alpha = 0.7f)
+                                )
+                            }
                         }
                     },
                     navigationIcon = {
@@ -242,12 +248,15 @@ fun ProfileAdvertsListScreen(
                                     }
                                 }
 
-//                                items(profileData.data.adverts) { advert ->
-//                                    AdvertCard(
-//                                        advert = advert,
-//                                        onAdvertClick = { selectedAdvert = it }
-//                                    )
-//                                }
+                                items(profileData.data.adverts) { advert ->
+                                    AdvertCard(
+                                        advert = advert,
+                                        onAdvertClick = { 
+                                            selectedAdvert = it
+                                            showEditAdvertModal = true
+                                        }
+                                    )
+                                }
                                 
                                 // Add some bottom padding
                                 item {
@@ -298,25 +307,65 @@ fun ProfileAdvertsListScreen(
             }
         }
 
-        // Advert Details Modal
-        AdvertDetailsModal(
-            isVisible = selectedAdvert != null,
-            advert = selectedAdvert,
-            onDismiss = { selectedAdvert = null }
+        // Create Advert Modal
+        categories.DisplayResult(
+            onSuccess = { categoriesData ->
+                AdvertCreateModal(
+                    isVisible = showAddAdvertModal,
+                    categories = categoriesData.data,
+                    isLoading = isUpdatingAdvert,
+                    onDismiss = { showAddAdvertModal = false },
+                    onSave = { title, description, categoryId, slug ->
+                        viewModel.createAdvert(
+                            title = title,
+                            description = description,
+                            categoryId = categoryId,
+                            slug = slug
+                        )
+                        showAddAdvertModal = false
+                    }
+                )
+            },
+            onError = { },
+            onLoading = { }
         )
 
-        // Add Advert Modal (placeholder for now)
-        if (showAddAdvertModal) {
-            AlertDialog(
-                onDismissRequest = { showAddAdvertModal = false },
-                title = { Text("Add New Advert") },
-                text = { Text("Advert creation functionality will be implemented here.") },
-                confirmButton = {
-                    TextButton(onClick = { showAddAdvertModal = false }) {
-                        Text("OK")
+        // Edit Advert Modal
+        categories.DisplayResult(
+            onSuccess = { categoriesData ->
+                AdvertEditModal(
+                    isVisible = showEditAdvertModal,
+                    advert = selectedAdvert,
+                    categories = categoriesData.data,
+                    isLoading = isUpdatingAdvert,
+                    onDismiss = { 
+                        showEditAdvertModal = false
+                        selectedAdvert = null
+                    },
+                    onSave = { title, description, categoryId, slug ->
+                        selectedAdvert?.let { advert ->
+                            viewModel.updateAdvert(
+                                advertId = advert.documentId,
+                                title = title,
+                                description = description,
+                                categoryId = categoryId,
+                                slug = slug
+                            )
+                        }
+                        showEditAdvertModal = false
+                        selectedAdvert = null
+                    },
+                    onDelete = {
+                        selectedAdvert?.let { advert ->
+                            viewModel.deleteAdvert(advert.documentId)
+                        }
+                        showEditAdvertModal = false
+                        selectedAdvert = null
                     }
-                }
-            )
-        }
+                )
+            },
+            onError = { },
+            onLoading = { }
+        )
     }
 }

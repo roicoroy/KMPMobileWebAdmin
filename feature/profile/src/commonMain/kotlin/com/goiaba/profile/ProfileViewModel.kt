@@ -2,12 +2,17 @@ package com.goiaba.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.goiaba.data.models.adverts.AdvertCreateRequest
+import com.goiaba.data.models.adverts.AdvertUpdateRequest
+import com.goiaba.data.models.adverts.CategoryResponse
 import com.goiaba.data.models.profile.AddressCreateRequest
 import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateRequest
+import com.goiaba.data.models.profile.strapiUser.PutProfileResponse
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.models.profile.strapiUser.UserProfilePutResquest
+import com.goiaba.data.services.adverts.domain.AdvertRepository
 import com.goiaba.data.services.logger.domain.LoggerRepository
 import com.goiaba.data.services.profile.domain.ProfileRepository
 import com.goiaba.shared.util.RequestState
@@ -23,6 +28,7 @@ class ProfileViewModel : ViewModel(), KoinComponent {
 
     private val profileRepository: ProfileRepository by inject()
     private val loggerRepository: LoggerRepository by inject()
+    private val advertRepository: AdvertRepository by inject()
 
     private val _welcomeText = MutableStateFlow("Hello View")
     val welcomeText: StateFlow<String> = _welcomeText.asStateFlow()
@@ -42,9 +48,17 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     private val _strapiProfile = MutableStateFlow<RequestState<StrapiProfile>>(RequestState.Idle)
     val strapiProfile: StateFlow<RequestState<StrapiProfile>> = _strapiProfile.asStateFlow()
 
+    // Categories state
+    private val _categories = MutableStateFlow<RequestState<CategoryResponse>>(RequestState.Idle)
+    val categories: StateFlow<RequestState<CategoryResponse>> = _categories.asStateFlow()
+
     // Address editing state
     private val _isUpdatingAddress = MutableStateFlow(false)
     val isUpdatingAddress: StateFlow<Boolean> = _isUpdatingAddress.asStateFlow()
+
+    // Advert editing state
+    private val _isUpdatingAdvert = MutableStateFlow(false)
+    val isUpdatingAdvert: StateFlow<Boolean> = _isUpdatingAdvert.asStateFlow()
 
     private val _updateMessage = MutableStateFlow<String?>(null)
     val updateMessage: StateFlow<String?> = _updateMessage.asStateFlow()
@@ -96,6 +110,14 @@ class ProfileViewModel : ViewModel(), KoinComponent {
             } catch (e: Exception) {
                 _user.value = RequestState.Error("Failed to load profile: ${e.message}")
                 _strapiProfile.value = RequestState.Error("Failed to load profile: ${e.message}")
+            }
+        }
+    }
+
+    fun loadCategories() {
+        viewModelScope.launch {
+            advertRepository.getCategories().collect { result ->
+                _categories.value = result
             }
         }
     }
@@ -369,6 +391,148 @@ class ProfileViewModel : ViewModel(), KoinComponent {
             } catch (e: Exception) {
                 _isUpdatingAddress.value = false
                 _updateMessage.value = "Error deleting address: ${e.message}"
+            }
+        }
+    }
+
+    // Advert CRUD operations
+    fun createAdvert(
+        title: String,
+        description: String,
+        categoryId: String,
+        slug: String?
+    ) {
+        viewModelScope.launch {
+            _isUpdatingAdvert.value = true
+            _updateMessage.value = null
+
+            try {
+                val currentUser = _user.value.getSuccessDataOrNull()
+                if (currentUser != null) {
+                    val request = AdvertCreateRequest(
+                        data = AdvertCreateRequest.AdvertCreateData(
+                            title = title,
+                            description = description,
+                            category = categoryId,
+                            slug = slug,
+                            user = currentUser.documentId
+                        )
+                    )
+
+                    advertRepository.createAdvert(request).collect { result ->
+                        when (result) {
+                            is RequestState.Loading -> {
+                                _isUpdatingAdvert.value = true
+                            }
+
+                            is RequestState.Success -> {
+                                _isUpdatingAdvert.value = false
+                                _updateMessage.value = "Advert created successfully!"
+                                loadUserProfile() // Refresh to show new advert
+                            }
+
+                            is RequestState.Error -> {
+                                _isUpdatingAdvert.value = false
+                                _updateMessage.value = "Failed to create advert: ${result.message}"
+                            }
+
+                            else -> {
+                                _isUpdatingAdvert.value = false
+                            }
+                        }
+                    }
+                } else {
+                    _isUpdatingAdvert.value = false
+                    _updateMessage.value = "User not found. Please login again."
+                }
+            } catch (e: Exception) {
+                _isUpdatingAdvert.value = false
+                _updateMessage.value = "Error creating advert: ${e.message}"
+            }
+        }
+    }
+
+    fun updateAdvert(
+        advertId: String,
+        title: String,
+        description: String,
+        categoryId: String?,
+        slug: String?
+    ) {
+        viewModelScope.launch {
+            _isUpdatingAdvert.value = true
+            _updateMessage.value = null
+
+            try {
+                val request = AdvertUpdateRequest(
+                    data = AdvertUpdateRequest.AdvertUpdateData(
+                        title = title,
+                        description = description,
+                        category = categoryId,
+                        slug = slug
+                    )
+                )
+
+                advertRepository.updateAdvert(advertId, request).collect { result ->
+                    when (result) {
+                        is RequestState.Loading -> {
+                            _isUpdatingAdvert.value = true
+                        }
+
+                        is RequestState.Success -> {
+                            _isUpdatingAdvert.value = false
+                            _updateMessage.value = "Advert updated successfully!"
+                            loadUserProfile() // Refresh to show updated advert
+                        }
+
+                        is RequestState.Error -> {
+                            _isUpdatingAdvert.value = false
+                            _updateMessage.value = "Failed to update advert: ${result.message}"
+                        }
+
+                        else -> {
+                            _isUpdatingAdvert.value = false
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _isUpdatingAdvert.value = false
+                _updateMessage.value = "Error updating advert: ${e.message}"
+            }
+        }
+    }
+
+    fun deleteAdvert(advertId: String) {
+        viewModelScope.launch {
+            _isUpdatingAdvert.value = true
+            _updateMessage.value = null
+
+            try {
+                advertRepository.deleteAdvert(advertId).collect { result ->
+                    when (result) {
+                        is RequestState.Loading -> {
+                            _isUpdatingAdvert.value = true
+                        }
+
+                        is RequestState.Success -> {
+                            _isUpdatingAdvert.value = false
+                            _updateMessage.value = "Advert deleted successfully!"
+                            loadUserProfile() // Refresh to remove deleted advert
+                        }
+
+                        is RequestState.Error -> {
+                            _isUpdatingAdvert.value = false
+                            _updateMessage.value = "Failed to delete advert: ${result.message}"
+                        }
+
+                        else -> {
+                            _isUpdatingAdvert.value = false
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _isUpdatingAdvert.value = false
+                _updateMessage.value = "Error deleting advert: ${e.message}"
             }
         }
     }
