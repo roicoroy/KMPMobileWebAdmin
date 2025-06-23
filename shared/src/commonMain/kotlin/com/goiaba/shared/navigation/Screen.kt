@@ -42,4 +42,7 @@ sealed class Screen {
 
     @Serializable
     data object AdvertsListScreen : Screen()
+
+    @Serializable
+    data object AddressListScreen : Screen()
 }

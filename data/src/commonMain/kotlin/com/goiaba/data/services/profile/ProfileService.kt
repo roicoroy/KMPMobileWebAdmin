@@ -8,6 +8,7 @@ import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.AddressUpdateResponse
 import com.goiaba.data.models.profile.UserUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.networking.ApiClient
 import com.goiaba.data.networking.apiUsersMe
@@ -24,6 +25,36 @@ class ProfileService {
             when (response.status) {
                 HttpStatusCode.OK -> {
                     val usersMeResponseHttp = response.body<StrapiUser>()
+                    RequestState.Success(usersMeResponseHttp)
+                }
+
+                HttpStatusCode.NotFound -> {
+                    RequestState.Error("User not found")
+                }
+
+                HttpStatusCode.Unauthorized -> {
+                    RequestState.Error("Unauthorized: Invalid API token")
+                }
+
+                else -> {
+                    RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
+                }
+            }
+        } catch (e: Exception) {
+            RequestState.Error("Network error: ${e.message ?: "Unknown error occurred"}")
+        }
+    }
+
+    suspend fun getUserProfile(
+        userDocumentId: String,
+    ): RequestState<StrapiProfile> {
+        return try {
+//            http://localhost:1337/api/profiles/hx64nkwcpgta4lmtwk7p4lyv?populate=*
+//            r21y5s6f16brcbn6a2zwex0f
+            val response: HttpResponse = ApiClient.httpClient.get("api/profiles/$userDocumentId?populate=*")
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val usersMeResponseHttp = response.body<StrapiProfile>()
                     RequestState.Success(usersMeResponseHttp)
                 }
 

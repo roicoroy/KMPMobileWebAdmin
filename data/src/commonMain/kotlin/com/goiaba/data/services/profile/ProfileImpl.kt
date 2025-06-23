@@ -7,6 +7,7 @@ import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.AddressUpdateResponse
 import com.goiaba.data.models.profile.UserUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.services.profile.domain.ProfileRepository
 import com.goiaba.shared.util.RequestState
@@ -35,6 +36,22 @@ class ProfileImpl : ProfileRepository {
             emit(RequestState.Error("Failed to fetch posts: ${e.message}"))
         }
     }
+
+    override fun getUserProfile(userDocumentId: String): Flow<RequestState<StrapiProfile>> = flow {
+        emit(RequestState.Loading)
+        try {
+            delay(500)
+            val result = apiService.getUserProfile(userDocumentId)
+            if (result.isSuccess()) {
+                emit(RequestState.Success(result.getSuccessData()))
+            } else {
+                emit(RequestState.Error("Unknown error occurred"))
+            }
+        } catch (e: Exception) {
+            emit(RequestState.Error("Failed to fetch posts: ${e.message}"))
+        }
+    }
+
 
     override suspend fun createAddress(request: AddressCreateRequest): Flow<RequestState<AddressCreateResponse>> =
         flow {

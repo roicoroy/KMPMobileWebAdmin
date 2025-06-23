@@ -35,7 +35,7 @@ fun App() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val startDestination = remember {
-                if (isLoggedIn.value) Screen.HomeGraph
+                if (isLoggedIn.value) Screen.ProfileScreen
                 else Screen.LoginScreen
             }
 

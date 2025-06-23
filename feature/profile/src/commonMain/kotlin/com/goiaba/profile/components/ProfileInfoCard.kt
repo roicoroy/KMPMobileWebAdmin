@@ -1,6 +1,5 @@
 package com.goiaba.profile.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -12,14 +11,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.goiaba.data.models.profile.strapiUser.StrapiUser
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun UserInfoCard(
-    user: StrapiUser
+fun ProfileInfoCard(
+    user: StrapiProfile
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -45,18 +44,17 @@ fun UserInfoCard(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
                     ) {
-
-//                        AsyncImage(
-//                            model = user.profileImage.url,
-//                            contentDescription = "Advert cover",
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .height(200.dp)
-//                                .clip(RoundedCornerShape(8.dp)),
-//                            contentScale = ContentScale.Crop,
-//                            placeholder = painterResource(Resources.Image.Cat),
-//                            error = painterResource(Resources.Image.Cat)
-//                        )
+                        AsyncImage(
+                            model = user.data.avatar.url,
+                            contentDescription = "Advert cover",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop,
+                            placeholder = painterResource(Resources.Image.Cat),
+                            error = painterResource(Resources.Image.Cat)
+                        )
                     }
                 }
                 
@@ -64,13 +62,13 @@ fun UserInfoCard(
                 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = user.username,
+                        text = user.data.user.username,
                         fontSize = FontSize.LARGE,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = user.email,
+                        text = user.data.user.email,
                         fontSize = FontSize.REGULAR,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -102,62 +100,10 @@ fun UserInfoCard(
                     )
                     
                     // User ID
-                    UserDetailRow(
+                    ProfileDetailRow(
                         icon = "🆔",
                         label = "User ID",
-                        value = user.id.toString()
-                    )
-                    
-                    // Document ID
-                    UserDetailRow(
-                        icon = "📄",
-                        label = "Document ID",
-                        value = user.documentId
-                    )
-                    
-                    // Provider
-                    UserDetailRow(
-                        icon = "🔐",
-                        label = "Provider",
-                        value = user.provider.replaceFirstChar { it.uppercase() }
-                    )
-                    
-                    // Account Status
-                    UserDetailRow(
-                        icon = if (user.confirmed) "✅" else "❌",
-                        label = "Status",
-                        value = if (user.confirmed) "Confirmed" else "Unconfirmed"
-                    )
-                    
-//                    // Account Type
-//                    UserDetailRow(
-//                        icon = if (user.professional) "💼" else "👤",
-//                        label = "Account Type",
-//                        value = if (user.professional) "Professional" else "Regular User"
-//                    )
-                    
-                    // Blocked Status
-                    if (user.blocked) {
-                        UserDetailRow(
-                            icon = "🚫",
-                            label = "Account Status",
-                            value = "Blocked"
-                        )
-                    }
-                    
-                    // Created Date
-                    UserDetailRow(
-                        icon = "📅",
-                        label = "Member Since",
-                        value = user.createdAt.take(10)
-                    )
-                    
-                    // Last Updated
-                    UserDetailRow(
-                        icon = "🔄",
-                        label = "Last Updated",
-                        value = user.updatedAt.take(10),
-                        isLast = true
+                        value = user.data.id.toString()
                     )
                 }
             }
@@ -169,28 +115,28 @@ fun UserInfoCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-//                StatisticCard(
-//                    icon = "🏠",
-//                    count = user.addresses.size,
-//                    label = "Addresses",
-//                    modifier = Modifier.weight(1f)
-//                )
+                StatisticCard(
+                    icon = "🏠",
+                    count = user.data.addresses.size,
+                    label = "Addresses",
+                    modifier = Modifier.weight(1f)
+                )
                 
                 Spacer(modifier = Modifier.width(12.dp))
                 
-//                StatisticCard(
-//                    icon = "📢",
-//                    count = user.adverts.size,
-//                    label = "Adverts",
-//                    modifier = Modifier.weight(1f)
-//                )
+                StatisticCard(
+                    icon = "📢",
+                    count = user.data.adverts.size,
+                    label = "Adverts",
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
 }
 
 @Composable
-private fun UserDetailRow(
+private fun ProfileDetailRow(
     icon: String,
     label: String,
     value: String,

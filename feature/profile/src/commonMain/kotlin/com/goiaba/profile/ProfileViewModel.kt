@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.goiaba.data.models.profile.AddressCreateRequest
 import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateRequest
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.services.profile.domain.ProfileRepository
 import com.goiaba.shared.util.RequestState
@@ -20,6 +21,9 @@ class ProfileViewModel : ViewModel(), KoinComponent {
 
     private val profileRepository: ProfileRepository by inject()
 
+    private val _welcomeText = MutableStateFlow("Hello View")
+    val welcomeText: StateFlow<String> = _welcomeText.asStateFlow()
+
     private val _isLoggedIn = MutableStateFlow(TokenManager.isLoggedIn())
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
@@ -28,6 +32,9 @@ class ProfileViewModel : ViewModel(), KoinComponent {
 
     private val _user = MutableStateFlow<RequestState<StrapiUser>>(RequestState.Loading)
     val user: StateFlow<RequestState<StrapiUser>> = _user.asStateFlow()
+
+    private val _strapiProfile = MutableStateFlow<RequestState<StrapiProfile>>(RequestState.Loading)
+    val strapiProfile: StateFlow<RequestState<StrapiProfile>> = _strapiProfile.asStateFlow()
 
     // Address editing state
     private val _isUpdatingAddress = MutableStateFlow(false)
@@ -45,12 +52,20 @@ class ProfileViewModel : ViewModel(), KoinComponent {
 
     private fun loadUserProfile() {
         viewModelScope.launch {
+            _strapiProfile.value = RequestState.Loading
             _user.value = RequestState.Loading
             
             try {
                 profileRepository.getUsersMe().collect { result ->
                     _user.value = result
                 }
+
+                val userdocId = _user.value.getSuccessData().profile.documentId
+
+                profileRepository.getUserProfile(userdocId).collect { result ->
+                    _strapiProfile.value = result
+                }
+
             } catch (e: Exception) {
                 _user.value = RequestState.Error("Failed to load profile: ${e.message}")
             }
@@ -244,40 +259,6 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 _isUpdatingAddress.value = false
                 _updateMessage.value = "Error deleting address: ${e.message}"
             }
-        }
-    }
-
-    private suspend fun updateUserAddressesAfterDelete(userDocumentId: String, addressIds: List<String>) {
-        try {
-            val userUpdateRequest = UserUpdateRequest(
-                data = UserUpdateRequest.UserUpdateData(
-                    addresses = addressIds
-                )
-            )
-
-            profileRepository.updateUser(userDocumentId, userUpdateRequest).collect { result ->
-                when (result) {
-                    is RequestState.Success -> {
-                        _isUpdatingAddress.value = false
-                        _updateMessage.value = "Address deleted successfully!"
-                        // Refresh profile to get updated data
-                        loadUserProfile()
-                    }
-                    is RequestState.Error -> {
-                        _isUpdatingAddress.value = false
-                        _updateMessage.value = "Address deleted but failed to update profile: ${result.message}"
-                        // Still refresh to show updated data
-                        loadUserProfile()
-                    }
-                    else -> {
-                        // Keep loading state
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            _isUpdatingAddress.value = false
-            _updateMessage.value = "Address deleted but profile update failed: ${e.message}"
-            loadUserProfile()
         }
     }
 

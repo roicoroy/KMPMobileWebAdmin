@@ -27,7 +27,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileAdvertsListScreen(
+fun ProfileAddressListScreen(
     navigateToHome: () -> Unit,
 ) {
     val viewModel = koinViewModel<ProfileViewModel>()
@@ -43,7 +43,7 @@ fun ProfileAdvertsListScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Profile Adverts List Screen",
+                            text = "Profile Address List Screen",
                             fontSize = FontSize.LARGE,
                             color = TextPrimary
                         )
