@@ -10,6 +10,7 @@ import com.goiaba.data.models.profile.UserUpdateResponse
 import com.goiaba.data.models.profile.strapiUser.PutProfileResponse
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
+import com.goiaba.data.models.profile.strapiUser.UserProfilePutResquest
 import com.goiaba.data.services.profile.domain.ProfileRepository
 import com.goiaba.shared.util.RequestState
 import kotlinx.coroutines.delay
@@ -147,17 +148,17 @@ class ProfileImpl : ProfileRepository {
      * @param request The updated user details.
      * @return A Flow emitting the outcome of the update process.
      */
-    override suspend fun updateUser(
+    override suspend fun updateProfile(
         userDocumentId: String,
-        request: UserUpdateRequest
-    ): Flow<RequestState<UserUpdateResponse>> = flow {
+        request: UserProfilePutResquest
+    ): Flow<RequestState<PutProfileResponse>> = flow {
         emit(RequestState.Loading) // Notify that the update has started.
 
         try {
             delay(300) // Simulate minimal latency.
 
             // Forward the update request and stream the result status.
-            val result = apiService.updateUser(userDocumentId, request)
+            val result = apiService.updateProfile(userDocumentId, request)
             emit(result)
         } catch (e: Exception) {
             emit(RequestState.Error("Failed to update user: ${e.message}"))

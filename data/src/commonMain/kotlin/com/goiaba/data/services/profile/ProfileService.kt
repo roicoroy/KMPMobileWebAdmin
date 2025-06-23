@@ -8,8 +8,10 @@ import com.goiaba.data.models.profile.AddressUpdateRequest
 import com.goiaba.data.models.profile.AddressUpdateResponse
 import com.goiaba.data.models.profile.UserUpdateRequest
 import com.goiaba.data.models.profile.UserUpdateResponse
+import com.goiaba.data.models.profile.strapiUser.PutProfileResponse
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
+import com.goiaba.data.models.profile.strapiUser.UserProfilePutResquest
 import com.goiaba.data.networking.ApiClient
 import com.goiaba.data.networking.apiUsersMe
 import com.goiaba.shared.util.RequestState
@@ -190,18 +192,18 @@ class ProfileService {
         }
     }
 
-    suspend fun updateUser(
-        userDocumentId: String,
-        request: UserUpdateRequest
-    ): RequestState<UserUpdateResponse> {
+    suspend fun updateProfile(
+        profileDocumentId: String,
+        request: UserProfilePutResquest
+    ): RequestState<PutProfileResponse> {
         return try {
-            val response: HttpResponse = ApiClient.httpClient.put("api/users/$userDocumentId") {
+            val response: HttpResponse = ApiClient.httpClient.put("api/profiles/$profileDocumentId") {
                 setBody(request)
             }
 
             when (response.status) {
                 HttpStatusCode.OK -> {
-                    val userResponse = response.body<UserUpdateResponse>()
+                    val userResponse = response.body<PutProfileResponse>()
                     RequestState.Success(userResponse)
                 }
 

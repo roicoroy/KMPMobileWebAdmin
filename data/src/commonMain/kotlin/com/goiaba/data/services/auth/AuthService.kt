@@ -20,7 +20,6 @@ class AuthService {
             val response: HttpResponse = ApiClient.httpClient.post(loginRequest) {
                 setBody(request)
             }
-            
             when (response.status) {
                 HttpStatusCode.OK -> {
                     val loginResponse = response.body<LoginResponse>()

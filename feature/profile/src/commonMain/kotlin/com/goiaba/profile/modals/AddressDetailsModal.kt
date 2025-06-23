@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.goiaba.data.models.profile.Addresse
-import com.goiaba.profile.components.AddressEditModal
 import com.goiaba.profile.components.DetailRow
 import com.goiaba.profile.utils.formatDate
 import com.goiaba.shared.*

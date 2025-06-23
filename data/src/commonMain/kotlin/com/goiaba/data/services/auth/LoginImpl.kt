@@ -14,11 +14,8 @@ class LoginImpl : LoginRepository {
     
     override suspend fun login(loginRequest: LoginRequest): Flow<RequestState<LoginResponse>> = flow {
         emit(RequestState.Loading)
-        
         try {
-            // Add a small delay to show loading state
             delay(500)
-            
             val result = authService.login(loginRequest)
             emit(result)
         } catch (e: Exception) {

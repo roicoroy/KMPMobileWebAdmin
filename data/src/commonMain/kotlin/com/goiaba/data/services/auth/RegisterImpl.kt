@@ -14,11 +14,8 @@ class RegisterImpl : RegisterRepository {
     
     override suspend fun register(registerRequest: RegisterRequest): Flow<RequestState<RegisterResponse>> = flow {
         emit(RequestState.Loading)
-        
         try {
-            // Add a small delay to show loading state
             delay(500)
-            
             val result = authService.register(registerRequest)
             emit(result)
         } catch (e: Exception) {

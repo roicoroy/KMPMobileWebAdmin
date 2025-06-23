@@ -70,24 +70,20 @@ class LoginViewModel : ViewModel(), KoinComponent {
             try {
                 loginRepository.login(loginRequest).collect { result ->
                     _loginResult.value = result
-                    
                     when (result) {
                         is RequestState.Loading -> {
                             _isLoading.value = true
                         }
-                        
                         is RequestState.Success -> {
                             _isLoading.value = false
                             // Store JWT token and user data
                             storeToken(result.data)
                             _shouldNavigateToHome.value = true
                         }
-                        
                         is RequestState.Error -> {
                             _isLoading.value = false
                             _errorMessage.value = result.message
                         }
-                        
                         else -> {
                             _isLoading.value = false
                         }

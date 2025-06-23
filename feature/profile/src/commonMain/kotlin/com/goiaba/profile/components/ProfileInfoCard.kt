@@ -1,25 +1,82 @@
 package com.goiaba.profile.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
+import com.goiaba.profile.ProfileViewModel
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
+import com.goiaba.shared.TextPrimary
+import com.goiaba.shared.util.ImagePickerResult
+import com.goiaba.shared.util.rememberImagePicker
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ProfileInfoCard(
-    user: StrapiProfile
+    user: StrapiProfile,
+    userRole:String?
 ) {
+    val viewModel = koinViewModel<ProfileViewModel>()
+    var selectedImageData by remember { mutableStateOf<ByteArray?>(null) }
+    var selectedImageName by remember { mutableStateOf<String?>(null) }
+    var isUploadingImage by remember { mutableStateOf(false) }
+    var shouldPickImage by remember { mutableStateOf(false) }
+    val imagePicker = rememberImagePicker()
+
+    LaunchedEffect(shouldPickImage) {
+        if (shouldPickImage) {
+            isUploadingImage = true
+            try {
+                val result = imagePicker.pickImage()
+                when (result) {
+                    is ImagePickerResult.Success -> {
+                        selectedImageData = result.imageData
+                        selectedImageName = result.fileName
+
+                        // Save to gallery first
+                        val saved = imagePicker.saveImageToGallery(
+                            result.imageData,
+                            result.fileName
+                        )
+
+                        if (saved) {
+                            // Upload to Strapi
+                            viewModel.uploadProfileImage(result.imageData, result.fileName)
+                        }
+                    }
+                    is ImagePickerResult.Error -> {
+                        // Handle error - could show a snackbar or error message
+                    }
+                    null -> {
+                        // User cancelled
+                    }
+                }
+            } catch (e: Exception) {
+                // Handle exception
+            } finally {
+                isUploadingImage = false
+                shouldPickImage = false
+            }
+        }
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -30,7 +87,6 @@ fun ProfileInfoCard(
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
-            // Header with user icon
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -50,6 +106,7 @@ fun ProfileInfoCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp)
+                                .clickable { shouldPickImage = true }
                                 .clip(RoundedCornerShape(8.dp)),
                             contentScale = ContentScale.Crop,
                             placeholder = painterResource(Resources.Image.Cat),
@@ -57,9 +114,9 @@ fun ProfileInfoCard(
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
-                
+
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = user.data.user.username,
@@ -72,45 +129,17 @@ fun ProfileInfoCard(
                         fontSize = FontSize.REGULAR,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if(userRole != null){
+                        Text(
+                            text = "$userRole",
+                            fontSize = FontSize.SMALL,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
             }
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            // User details section
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "Account Information",
-                        fontSize = FontSize.MEDIUM,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                    
-                    // User ID
-                    ProfileDetailRow(
-                        icon = "🆔",
-                        label = "User ID",
-                        value = user.data.id.toString()
-                    )
-                }
-            }
-            
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // Statistics Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -121,9 +150,7 @@ fun ProfileInfoCard(
                     label = "Addresses",
                     modifier = Modifier.weight(1f)
                 )
-                
                 Spacer(modifier = Modifier.width(12.dp))
-                
                 StatisticCard(
                     icon = "📢",
                     count = user.data.adverts.size,
@@ -131,40 +158,6 @@ fun ProfileInfoCard(
                     modifier = Modifier.weight(1f)
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun ProfileDetailRow(
-    icon: String,
-    label: String,
-    value: String,
-    isLast: Boolean = false
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = if (isLast) 0.dp else 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = icon,
-            fontSize = FontSize.REGULAR,
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        Column {
-            Text(
-                text = label,
-                fontSize = FontSize.SMALL,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = value,
-                fontSize = FontSize.REGULAR,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

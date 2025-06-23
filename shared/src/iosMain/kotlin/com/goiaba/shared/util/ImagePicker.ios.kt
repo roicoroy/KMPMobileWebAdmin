@@ -7,6 +7,7 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.allocArrayOf
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.usePinned
+import org.koin.core.component.getScopeName
 import platform.Foundation.NSData
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
@@ -19,7 +20,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 actual class ImagePicker {
-    
+
     actual suspend fun pickImage(): ImagePickerResult? {
         // iOS implementation would require UIImagePickerController
         // For now, return a placeholder implementation
@@ -29,21 +30,22 @@ actual class ImagePicker {
             continuation.resume(null)
         }
     }
-    
+
     @OptIn(ExperimentalForeignApi::class)
     actual suspend fun saveImageToGallery(imageData: ByteArray, fileName: String): Boolean {
         return try {
-//            val nsData = imageData.usePinned { pinned ->
-//                NSData.create(bytes = pinned.addressOf(0), length = imageData.size.toULong())
+//            val nsData: NSData = imageData.usePinned { pinned ->
+////                NSData.create(bytes = pinned.addressOf(0), length = imageData.size.toULong())
 //            }
-//
+
 //            val image = UIImage.imageWithData(nsData)
-            if (true) {
+//            if (image != null) {
 //                UIImageWriteToSavedPhotosAlbum(image, null, null, null)
-                true
-            } else {
-                false
-            }
+//                true
+//            } else {
+//                false
+//            }
+            return true
         } catch (e: Exception) {
             false
         }

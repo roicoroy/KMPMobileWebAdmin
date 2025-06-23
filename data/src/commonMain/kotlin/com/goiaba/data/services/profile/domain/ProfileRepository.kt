@@ -10,6 +10,7 @@ import com.goiaba.data.models.profile.UserUpdateResponse
 import com.goiaba.data.models.profile.strapiUser.PutProfileResponse
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
+import com.goiaba.data.models.profile.strapiUser.UserProfilePutResquest
 import com.goiaba.shared.util.RequestState
 import kotlinx.coroutines.flow.Flow
 
@@ -66,10 +67,10 @@ interface ProfileRepository {
      * @param request The updated details for the user.
      * @return A Flow that emits the result of the user update operation.
      */
-    suspend fun updateUser(
+    suspend fun updateProfile(
         userDocumentId: String,
-        request: UserUpdateRequest
-    ): Flow<RequestState<UserUpdateResponse>>
+        request: UserProfilePutResquest
+    ): Flow<RequestState<PutProfileResponse>>
 
     /**
      * Associates a user with an address in the system.

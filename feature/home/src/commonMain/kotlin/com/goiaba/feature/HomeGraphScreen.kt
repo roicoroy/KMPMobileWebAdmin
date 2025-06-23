@@ -166,7 +166,9 @@ fun HomeGraphScreen(
                     ) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Home Screen",
+//                            on the profile, the user has to update the info, date fo birth, avatar, add an address.
+//                            if user is a professional, he/she can post an add
+                            text = "Check if user has profile, if not create one.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

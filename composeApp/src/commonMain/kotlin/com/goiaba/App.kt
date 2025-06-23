@@ -35,10 +35,9 @@ fun App() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val startDestination = remember {
-                if (isLoggedIn.value) Screen.ProfileScreen
+                if (isLoggedIn.value) Screen.HomeGraph
                 else Screen.LoginScreen
             }
-
             SetupNavGraph(
                 startDestination
             )

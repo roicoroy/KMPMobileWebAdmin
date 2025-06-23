@@ -1,14 +1,19 @@
 package com.goiaba.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
-import com.goiaba.profile.components.AddressEditModal
+import com.goiaba.profile.modals.AddressEditModal
 import com.goiaba.profile.components.ProfileInfoCard
 import com.goiaba.profile.modals.AddressDetailsModal
 import com.goiaba.profile.modals.AdvertDetailsModal
@@ -29,6 +34,7 @@ fun ProfileScreen(
 
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val userEmail by viewModel.userEmail.collectAsState()
+    val userRole by viewModel.userRole.collectAsState()
     val user by viewModel.user.collectAsState()
     val strapiProfile by viewModel.strapiProfile.collectAsState()
     val isUpdatingAddress by viewModel.isUpdatingAddress.collectAsState()
@@ -40,10 +46,9 @@ fun ProfileScreen(
 
     // State for add address modal
     var showAddAddressModal by remember { mutableStateOf(false) }
-
+    var initialImageId: Int = 1
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Update auth state when screen is displayed
     LaunchedEffect(Unit) {
         viewModel.updateAuthState()
     }
@@ -65,19 +70,13 @@ fun ProfileScreen(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
-                    title = {
-                        Text(
-                            text = "Profile",
-                            fontSize = FontSize.LARGE,
-                            color = TextPrimary
-                        )
-                    },
+                    title = {},
                     navigationIcon = {
                         IconButton(onClick = navigateBack) {
                             Icon(
                                 painter = painterResource(Resources.Icon.BackArrow),
                                 contentDescription = "Back",
-                                tint = IconPrimary
+                                tint = White
                             )
                         }
                     },
@@ -89,30 +88,22 @@ fun ProfileScreen(
                                 Icon(
                                     painter = painterResource(Resources.Icon.Refresh),
                                     contentDescription = "Refresh",
-                                    tint = IconPrimary
+                                    tint = White
                                 )
                             }
-                            IconButton(onClick = navigateToAdvertsListScreen) {
-                                Icon(
-                                    painter = painterResource(Resources.Icon.Dollar),
-                                    contentDescription = "Adverts Screen",
-                                    tint = IconPrimary
-                                )
+                            Button(onClick = { navigateToAdvertsListScreen() }) {
+                                Text("Adverts")
                             }
-                            IconButton(onClick = navigateToAddressListScreen) {
-                                Icon(
-                                    painter = painterResource(Resources.Icon.Dollar),
-                                    contentDescription = "Address Screen",
-                                    tint = IconPrimary
-                                )
+                            Button(onClick = { navigateToAddressListScreen() }) {
+                                Text("Addresses")
                             }
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Surface,
+                        containerColor = Black,
                         scrolledContainerColor = Surface,
-                        titleContentColor = TextPrimary,
-                        actionIconContentColor = IconPrimary
+                        titleContentColor = White,
+                        actionIconContentColor = White
                     )
                 )
             }
@@ -143,14 +134,7 @@ fun ProfileScreen(
                         }
                     },
                     onSuccess = { userResponse ->
-                        ProfileContent(
-                            userProfile = userResponse,
-                            isUpdatingAddress = isUpdatingAddress,
-                            onRefresh = { viewModel.refreshProfile() },
-                            onAdvertClick = { advert -> selectedAdvert = advert },
-                            onAddressClick = { address -> selectedAddress = address },
-                            onAddAddressClick = { showAddAddressModal = true }
-                        )
+                        ProfileInfoCard(user = userResponse, userRole)
                     },
                     onError = { message ->
                         Column(
@@ -236,24 +220,5 @@ fun ProfileScreen(
             advert = selectedAdvert,
             onDismiss = { selectedAdvert = null }
         )
-    }
-}
-
-@Composable
-private fun ProfileContent(
-    userProfile: StrapiProfile,
-    isUpdatingAddress: Boolean,
-    onRefresh: () -> Unit,
-    onAdvertClick: (com.goiaba.data.models.profile.Advert) -> Unit,
-    onAddressClick: (com.goiaba.data.models.profile.Addresse) -> Unit,
-    onAddAddressClick: () -> Unit
-) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // User Information Card
-        item {
-            ProfileInfoCard(user = userProfile)
-        }
     }
 }

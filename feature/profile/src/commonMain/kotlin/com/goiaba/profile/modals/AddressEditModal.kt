@@ -1,4 +1,4 @@
-package com.goiaba.profile.components
+package com.goiaba.profile.modals
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
