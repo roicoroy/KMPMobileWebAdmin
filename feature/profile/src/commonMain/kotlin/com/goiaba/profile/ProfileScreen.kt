@@ -1,22 +1,16 @@
 package com.goiaba.profile
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.goiaba.data.models.profile.strapiUser.StrapiProfile
-import com.goiaba.profile.modals.AddressEditModal
-import com.goiaba.profile.components.ProfileInfoCard
-import com.goiaba.profile.modals.AddressDetailsModal
-import com.goiaba.profile.modals.AdvertDetailsModal
+import com.goiaba.profile.components.StrapiProfileCard
+import com.goiaba.profile.components.StrapiUserCard
 import com.goiaba.shared.*
 import com.goiaba.shared.components.InfoCard
 import com.goiaba.shared.util.DisplayResult
@@ -34,19 +28,10 @@ fun ProfileScreen(
 
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val userEmail by viewModel.userEmail.collectAsState()
-    val userRole by viewModel.userRole.collectAsState()
     val user by viewModel.user.collectAsState()
     val strapiProfile by viewModel.strapiProfile.collectAsState()
-    val isUpdatingAddress by viewModel.isUpdatingAddress.collectAsState()
     val updateMessage by viewModel.updateMessage.collectAsState()
 
-    // State for modals
-    var selectedAdvert by remember { mutableStateOf<com.goiaba.data.models.profile.Advert?>(null) }
-    var selectedAddress by remember { mutableStateOf<com.goiaba.data.models.profile.Addresse?>(null) }
-
-    // State for add address modal
-    var showAddAddressModal by remember { mutableStateOf(false) }
-    var initialImageId: Int = 1
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -70,13 +55,28 @@ fun ProfileScreen(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
-                    title = {},
+                    title = {
+                        Column {
+                            Text(
+                                text = "Profile",
+                                fontSize = FontSize.LARGE,
+                                color = TextPrimary
+                            )
+                            if (isLoggedIn && userEmail != null) {
+                                Text(
+                                    text = userEmail,
+                                    fontSize = FontSize.SMALL,
+                                    color = TextPrimary.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = navigateBack) {
                             Icon(
                                 painter = painterResource(Resources.Icon.BackArrow),
                                 contentDescription = "Back",
-                                tint = White
+                                tint = IconPrimary
                             )
                         }
                     },
@@ -88,79 +88,213 @@ fun ProfileScreen(
                                 Icon(
                                     painter = painterResource(Resources.Icon.Refresh),
                                     contentDescription = "Refresh",
-                                    tint = White
+                                    tint = IconPrimary
                                 )
-                            }
-                            Button(onClick = { navigateToAdvertsListScreen() }) {
-                                Text("Adverts")
-                            }
-                            Button(onClick = { navigateToAddressListScreen() }) {
-                                Text("Addresses")
                             }
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Black,
+                        containerColor = Surface,
                         scrolledContainerColor = Surface,
-                        titleContentColor = White,
-                        actionIconContentColor = White
+                        titleContentColor = TextPrimary,
+                        actionIconContentColor = IconPrimary
                     )
                 )
             }
         ) { padding ->
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                strapiProfile.DisplayResult(
-                    onLoading = {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                CircularProgressIndicator()
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Loading profile...",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+            if (!isLoggedIn) {
+                // Not logged in state
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    InfoCard(
+                        modifier = Modifier,
+                        image = Resources.Icon.Person,
+                        title = "Login Required",
+                        subtitle = "Please login to view your profile"
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Button(
+                        onClick = navigateBack,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("← Go Back")
+                    }
+                }
+            } else {
+                // Logged in state
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // User card
+                    item {
+                        user.DisplayResult(
+                            onLoading = {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            },
+                            onSuccess = { userData ->
+                                StrapiUserCard(user = userData)
+                            },
+                            onError = { message ->
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer
+                                    ),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = "Failed to load user data",
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                        Text(
+                                            text = message,
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                            fontSize = FontSize.SMALL
+                                        )
+                                    }
+                                }
                             }
-                        }
-                    },
-                    onSuccess = { userResponse ->
-                        ProfileInfoCard(user = userResponse, userRole)
-                    },
-                    onError = { message ->
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        )
+                    }
+
+                    // Profile card
+                    item {
+                        strapiProfile.DisplayResult(
+                            onLoading = {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            },
+                            onSuccess = { profileData ->
+                                StrapiProfileCard(
+                                    profile = profileData,
+                                    onImageClick = {
+                                        // Handle image click for upload
+                                    }
+                                )
+                            },
+                            onError = { message ->
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer
+                                    ),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = "Failed to load profile data",
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                        Text(
+                                            text = message,
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                            fontSize = FontSize.SMALL
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    // Navigation buttons
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Button(
-                                onClick = { viewModel.refreshProfile() },
+                                onClick = navigateToAdvertsListScreen,
+                                modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text("🔄 Retry")
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "📢",
+                                        fontSize = FontSize.LARGE
+                                    )
+                                    Text("My Adverts")
+                                }
                             }
-                            InfoCard(
-                                modifier = Modifier,
-                                image = Resources.Image.Cat,
-                                title = "Failed to Load Profile",
-                                subtitle = message
-                            )
 
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Button(
+                                onClick = navigateToAddressListScreen,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "🏠",
+                                        fontSize = FontSize.LARGE
+                                    )
+                                    Text("My Addresses")
+                                }
+                            }
                         }
                     }
-                )
+
+                    // Add some bottom padding
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
             }
         }
     }
