@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.goiaba.data.models.profile.Advert
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.profile.components.DetailRow
 import com.goiaba.profile.utils.formatDate
 import com.goiaba.shared.*
@@ -23,7 +23,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun AdvertDetailsModal(
     isVisible: Boolean,
-    advert: Advert?,
+    advert: StrapiProfile.Data.Advert?,
     onDismiss: () -> Unit
 ) {
     if (isVisible && advert != null) {
@@ -143,16 +143,14 @@ fun AdvertDetailsModal(
                                     Spacer(modifier = Modifier.height(16.dp))
                                     
                                     // Description
-                                    advert.description?.let { description ->
-                                        if (description.isNotBlank()) {
-                                            Text(
-                                                text = description,
-                                                fontSize = FontSize.REGULAR,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                lineHeight = FontSize.EXTRA_REGULAR
-                                            )
-                                            Spacer(modifier = Modifier.height(20.dp))
-                                        }
+                                    if (advert.description.isNotBlank()) {
+                                        Text(
+                                            text = advert.description,
+                                            fontSize = FontSize.REGULAR,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            lineHeight = FontSize.EXTRA_REGULAR
+                                        )
+                                        Spacer(modifier = Modifier.height(20.dp))
                                     }
                                     
                                     // Slug Section

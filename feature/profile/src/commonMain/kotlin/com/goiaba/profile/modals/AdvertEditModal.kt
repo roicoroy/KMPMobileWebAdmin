@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.goiaba.data.models.adverts.CategoryResponse
-import com.goiaba.data.models.profile.Advert
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
 import org.jetbrains.compose.resources.painterResource
@@ -31,7 +31,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun AdvertEditModal(
     isVisible: Boolean,
-    advert: Advert?,
+    advert: StrapiProfile.Data.Advert?,
     categories: List<CategoryResponse.Category>,
     isLoading: Boolean = false,
     onDismiss: () -> Unit,

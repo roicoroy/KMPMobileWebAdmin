@@ -9,15 +9,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.goiaba.data.models.profile.Advert
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun AdvertCard(
-    advert: Advert,
-    onAdvertClick: ((Advert) -> Unit)? = null
+    advert: StrapiProfile.Data.Advert,
+    onAdvertClick: ((StrapiProfile.Data.Advert) -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
@@ -109,15 +109,13 @@ fun AdvertCard(
             Spacer(modifier = Modifier.height(12.dp))
             
             // Description
-            advert.description?.let { description ->
-                if (description.isNotBlank()) {
-                    Text(
-                        text = description,
-                        fontSize = FontSize.REGULAR,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
+            if (advert.description.isNotBlank()) {
+                Text(
+                    text = advert.description,
+                    fontSize = FontSize.REGULAR,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
             }
             
             // Advert details

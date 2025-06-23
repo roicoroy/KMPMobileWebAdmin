@@ -35,7 +35,7 @@ fun ProfileAdvertsListScreen(
     val updateMessage by viewModel.updateMessage.collectAsState()
 
     // Modal state
-    var selectedAdvert by remember { mutableStateOf<com.goiaba.data.models.profile.Advert?>(null) }
+    var selectedAdvert by remember { mutableStateOf<com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Advert?>(null) }
     var showAddAdvertModal by remember { mutableStateOf(false) }
     var showEditAdvertModal by remember { mutableStateOf(false) }
 
