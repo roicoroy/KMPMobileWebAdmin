@@ -1,7 +1,6 @@
 package com.goiaba.profile.modals
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +45,8 @@ fun UserEditModal(
     
     // Date picker state
     var showDatePicker by remember { mutableStateOf(false) }
+    
+    // Parse initial date if available
     var selectedYear by remember { mutableStateOf(2000) }
     var selectedMonth by remember { mutableStateOf(1) }
     var selectedDay by remember { mutableStateOf(1) }
@@ -261,12 +262,9 @@ fun UserEditModal(
                                         },
                                         label = { Text("Date of Birth") },
                                         placeholder = { Text("YYYY-MM-DD") },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable { showDatePicker = true },
+                                        modifier = Modifier.fillMaxWidth(),
                                         enabled = !isLoading,
                                         isError = dobError != null,
-                                        readOnly = true, // Make it read-only since we're using the date picker
                                         trailingIcon = {
                                             IconButton(onClick = { showDatePicker = true }) {
                                                 Icon(
@@ -280,11 +278,17 @@ fun UserEditModal(
                                             { Text(error, color = MaterialTheme.colorScheme.error) }
                                         } ?: {
                                             Text(
-                                                "Click to select date",
+                                                "Format: YYYY-MM-DD",
                                                 fontSize = FontSize.SMALL,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
-                                        }
+                                        },
+                                        keyboardOptions = KeyboardOptions(
+                                            imeAction = ImeAction.Done
+                                        ),
+                                        keyboardActions = KeyboardActions(
+                                            onDone = { focusManager.clearFocus() }
+                                        )
                                     )
                                 }
                             }
@@ -396,12 +400,13 @@ fun UserEditModal(
             }
         }
         
-        // Custom Date Picker Dialog
+        // Material 3 Date Picker Dialog
         if (showDatePicker) {
             DatePickerDialog(
                 onDismissRequest = { showDatePicker = false },
+                title = { Text("Select Date of Birth") },
                 confirmButton = {
-                    TextButton(
+                    Button(
                         onClick = {
                             // Format the date as YYYY-MM-DD
                             dob = String.format("%04d-%02d-%02d", selectedYear, selectedMonth, selectedDay)
@@ -412,179 +417,234 @@ fun UserEditModal(
                     }
                 },
                 dismissButton = {
-                    TextButton(
+                    OutlinedButton(
                         onClick = { showDatePicker = false }
                     ) {
                         Text("Cancel")
                     }
                 }
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                MaterialDatePicker(
+                    initialYear = selectedYear,
+                    initialMonth = selectedMonth,
+                    initialDay = selectedDay,
+                    onDateSelected = { year, month, day ->
+                        selectedYear = year
+                        selectedMonth = month
+                        selectedDay = day
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DatePickerDialog(
+    onDismissRequest: () -> Unit,
+    title: @Composable () -> Unit,
+    confirmButton: @Composable () -> Unit,
+    dismissButton: @Composable () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
+            ) {
+                title()
+                Spacer(modifier = Modifier.height(16.dp))
+                content()
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Select Date of Birth",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    
-                    // Year picker
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Year:",
-                            modifier = Modifier.width(80.dp),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        
-                        // Simple number picker for year
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick = { 
-                                    if (selectedYear > 1900) selectedYear--
-                                }
-                            ) {
-                                Text("-", fontSize = FontSize.LARGE)
-                            }
-                            
-                            Text(
-                                text = selectedYear.toString(),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            
-                            IconButton(
-                                onClick = { 
-                                    if (selectedYear < getCurrentYear()) selectedYear++
-                                }
-                            ) {
-                                Text("+", fontSize = FontSize.LARGE)
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // Month picker
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Month:",
-                            modifier = Modifier.width(80.dp),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick = { 
-                                    if (selectedMonth > 1) selectedMonth--
-                                    else {
-                                        selectedMonth = 12
-                                        if (selectedYear > 1900) selectedYear--
-                                    }
-                                }
-                            ) {
-                                Text("-", fontSize = FontSize.LARGE)
-                            }
-                            
-                            Text(
-                                text = selectedMonth.toString(),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            
-                            IconButton(
-                                onClick = { 
-                                    if (selectedMonth < 12) selectedMonth++
-                                    else {
-                                        selectedMonth = 1
-                                        if (selectedYear < getCurrentYear()) selectedYear++
-                                    }
-                                }
-                            ) {
-                                Text("+", fontSize = FontSize.LARGE)
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // Day picker
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Day:",
-                            modifier = Modifier.width(80.dp),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick = { 
-                                    if (selectedDay > 1) selectedDay--
-                                    else {
-                                        // Go to previous month's last day
-                                        selectedMonth = if (selectedMonth > 1) selectedMonth - 1 else 12
-                                        if (selectedMonth == 12 && selectedYear > 1900) selectedYear--
-                                        selectedDay = getDaysInMonth(selectedMonth, selectedYear)
-                                    }
-                                }
-                            ) {
-                                Text("-", fontSize = FontSize.LARGE)
-                            }
-                            
-                            Text(
-                                text = selectedDay.toString(),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                            
-                            IconButton(
-                                onClick = { 
-                                    val daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
-                                    if (selectedDay < daysInMonth) selectedDay++
-                                    else {
-                                        // Go to next month's first day
-                                        selectedDay = 1
-                                        if (selectedMonth < 12) selectedMonth++
-                                        else {
-                                            selectedMonth = 1
-                                            if (selectedYear < getCurrentYear()) selectedYear++
-                                        }
-                                    }
-                                }
-                            ) {
-                                Text("+", fontSize = FontSize.LARGE)
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Preview of selected date
-                    Text(
-                        text = String.format("%04d-%02d-%02d", selectedYear, selectedMonth, selectedDay),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    dismissButton()
+                    Spacer(modifier = Modifier.width(8.dp))
+                    confirmButton()
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MaterialDatePicker(
+    initialYear: Int,
+    initialMonth: Int,
+    initialDay: Int,
+    onDateSelected: (Int, Int, Int) -> Unit
+) {
+    var year by remember { mutableStateOf(initialYear) }
+    var month by remember { mutableStateOf(initialMonth) }
+    var day by remember { mutableStateOf(initialDay) }
+    
+    // Update the callback whenever any value changes
+    LaunchedEffect(year, month, day) {
+        onDateSelected(year, month, day)
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        // Year selector
+        DatePickerSection(
+            title = "Year",
+            value = year,
+            onValueChange = { newYear ->
+                year = newYear
+                // Adjust day if needed (e.g., Feb 29 in non-leap years)
+                val maxDays = getDaysInMonth(month, newYear)
+                if (day > maxDays) {
+                    day = maxDays
+                }
+            },
+            minValue = 1900,
+            maxValue = getCurrentYear()
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Month selector
+        DatePickerSection(
+            title = "Month",
+            value = month,
+            onValueChange = { newMonth ->
+                month = newMonth
+                // Adjust day if needed
+                val maxDays = getDaysInMonth(newMonth, year)
+                if (day > maxDays) {
+                    day = maxDays
+                }
+            },
+            minValue = 1,
+            maxValue = 12,
+            valueFormatter = { getMonthName(it) }
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Day selector
+        DatePickerSection(
+            title = "Day",
+            value = day,
+            onValueChange = { day = it },
+            minValue = 1,
+            maxValue = getDaysInMonth(month, year)
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Preview
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Text(
+                text = String.format("%04d-%02d-%02d", year, month, day),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun DatePickerSection(
+    title: String,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    minValue: Int,
+    maxValue: Int,
+    valueFormatter: (Int) -> String = { it.toString() }
+) {
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(
+                onClick = { 
+                    if (value > minValue) onValueChange(value - 1)
+                }
+            ) {
+                Icon(
+                    painter = painterResource(Resources.Icon.Minus),
+                    contentDescription = "Decrease",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            Text(
+                text = valueFormatter(value),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            IconButton(
+                onClick = { 
+                    if (value < maxValue) onValueChange(value + 1)
+                }
+            ) {
+                Icon(
+                    painter = painterResource(Resources.Icon.Plus),
+                    contentDescription = "Increase",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { onValueChange(it.toInt()) },
+            valueRange = minValue.toFloat()..maxValue.toFloat(),
+            steps = maxValue - minValue - 1,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+// Helper function to get month name
+private fun getMonthName(month: Int): String {
+    return when (month) {
+        1 -> "January"
+        2 -> "February"
+        3 -> "March"
+        4 -> "April"
+        5 -> "May"
+        6 -> "June"
+        7 -> "July"
+        8 -> "August"
+        9 -> "September"
+        10 -> "October"
+        11 -> "November"
+        12 -> "December"
+        else -> month.toString()
     }
 }
 
