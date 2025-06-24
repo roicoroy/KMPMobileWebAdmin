@@ -395,12 +395,7 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     }
 
     // Advert CRUD operations
-    fun createAdvert(
-        title: String,
-        description: String,
-        categoryId: String,
-        slug: String?
-    ) {
+    fun createAdvert(title: String, description: String, categoryId: String, slug: String?) {
         viewModelScope.launch {
             _isUpdatingAdvert.value = true
             _updateMessage.value = null
@@ -410,12 +405,11 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 if (currentUser != null) {
                     val request = AdvertCreateRequest(
                         data = AdvertCreateRequest.AdvertCreateData(
-                            title = "Test",
-                            description = "description",
+                            title = title,
+                            description = description,
                             category = listOf(categoryId),
                             cover = "30",
-                            user = currentUser.id.toString(),
-                            slug = "test"
+                            slug = slug
                         )
                     )
 
@@ -439,10 +433,12 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                                     loadUserProfile() // Still refresh to show the address
                                 }
                             }
+
                             is RequestState.Error -> {
                                 _isUpdatingAdvert.value = false
                                 _updateMessage.value = "Failed to create advert: ${result.message}"
                             }
+
                             else -> {
                                 _isUpdatingAdvert.value = false
                             }

@@ -20,7 +20,7 @@ data class AdvertCreateRequest(
         val category: List<String>, // Category document ID
         @SerialName("cover")
         val cover: String? = null, // Image document ID
-        @SerialName("user")
-        val user: String // User document ID
+//        @SerialName("user")
+//        val user: String // User document ID
     )
 }

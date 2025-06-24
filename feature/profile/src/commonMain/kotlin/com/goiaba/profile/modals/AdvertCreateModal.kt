@@ -225,8 +225,7 @@ fun AdvertCreateModal(
                                     label = { Text("Category") },
                                     placeholder = { Text("Select a category") },
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .menuAnchor(),
+                                        .fillMaxWidth(),
                                     enabled = !isLoading,
                                     isError = categoryError != null,
                                     supportingText = categoryError?.let { error ->
