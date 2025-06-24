@@ -18,7 +18,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -394,11 +393,21 @@ fun UserEditModal(
         
         // Date Picker Dialog
         if (showDatePicker) {
+            val datePickerState = rememberDatePickerState(
+                initialSelectedDateMillis = initialSelectedDateMillis
+            )
+            
             DatePickerDialog(
                 onDismissRequest = { showDatePicker = false },
                 confirmButton = {
                     Button(
                         onClick = {
+                            datePickerState.selectedDateMillis?.let { millis ->
+                                val date = java.time.Instant.ofEpochMilli(millis)
+                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .toLocalDate()
+                                dob = date.format(DateTimeFormatter.ISO_LOCAL_DATE) // Format as YYYY-MM-DD
+                            }
                             showDatePicker = false
                         }
                     ) {
@@ -414,46 +423,15 @@ fun UserEditModal(
                 }
             ) {
                 DatePicker(
-                    state = rememberDatePickerState(
-                        initialSelectedDateMillis = initialSelectedDateMillis
-                    ),
+                    state = datePickerState,
                     title = { Text("Select Date of Birth") },
                     headline = { Text("Please select your date of birth") },
                     showModeToggle = false,
                     dateValidator = { timestamp ->
                         // Validate that the selected date is not in the future
                         timestamp <= System.currentTimeMillis()
-                    },
-                    colors = DatePickerDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        headlineContentColor = MaterialTheme.colorScheme.onSurface,
-                        weekdayContentColor = MaterialTheme.colorScheme.onSurface,
-                        subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        yearContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        currentYearContentColor = MaterialTheme.colorScheme.primary,
-                        selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
-                        selectedYearContainerColor = MaterialTheme.colorScheme.primary,
-                        dayContentColor = MaterialTheme.colorScheme.onSurface,
-                        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
-                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
-                        todayContentColor = MaterialTheme.colorScheme.primary,
-                        todayDateBorderColor = MaterialTheme.colorScheme.primary,
-                        dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        dayInSelectionRangeContainerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
+                    }
                 )
-            }
-            
-            // Update the dob value when a date is selected
-            LaunchedEffect(showDatePicker) {
-                val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialSelectedDateMillis)
-                datePickerState.selectedDateMillis?.let { millis ->
-                    val date = java.time.Instant.ofEpochMilli(millis)
-                        .atZone(java.time.ZoneId.systemDefault())
-                        .toLocalDate()
-                    dob = date.format(DateTimeFormatter.ISO_LOCAL_DATE) // Format as YYYY-MM-DD
-                }
             }
         }
     }
