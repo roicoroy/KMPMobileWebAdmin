@@ -1,6 +1,7 @@
 package com.goiaba.profile.modals
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,8 @@ import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
 import org.jetbrains.compose.resources.painterResource
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,14 +47,30 @@ fun UserEditModal(
     var username by remember(user) { mutableStateOf(user?.username ?: "") }
     var dob by remember(user) { mutableStateOf(user?.profile?.dob ?: "") }
     
+    // Date picker state
+    var showDatePicker by remember { mutableStateOf(false) }
+    
+    // Parse initial date if available
+    var initialSelectedDateMillis by remember { mutableStateOf<Long?>(null) }
+    
     // Error states
     var usernameError by remember { mutableStateOf<String?>(null) }
     var dobError by remember { mutableStateOf<String?>(null) }
     
-    // Reset form when user changes
+    // Parse initial date if available
     LaunchedEffect(user) {
         username = user?.username ?: ""
         dob = user?.profile?.dob ?: ""
+        
+        // Parse the date if it's in the correct format
+        if (dob.matches(Regex("""^\d{4}-\d{2}-\d{2}$"""))) {
+            try {
+                val localDate = LocalDate.parse(dob)
+                initialSelectedDateMillis = localDate.toEpochDay() * 24 * 60 * 60 * 1000
+            } catch (e: Exception) {
+                initialSelectedDateMillis = null
+            }
+        }
         
         // Clear errors
         usernameError = null
@@ -229,7 +248,7 @@ fun UserEditModal(
                                         modifier = Modifier.padding(bottom = 12.dp)
                                     )
                                     
-                                    // Date of Birth
+                                    // Date of Birth with DatePicker
                                     OutlinedTextField(
                                         value = dob,
                                         onValueChange = { 
@@ -238,25 +257,30 @@ fun UserEditModal(
                                         },
                                         label = { Text("Date of Birth") },
                                         placeholder = { Text("YYYY-MM-DD") },
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { showDatePicker = true },
                                         enabled = !isLoading,
                                         isError = dobError != null,
+                                        readOnly = true, // Make it read-only since we're using the date picker
+                                        trailingIcon = {
+                                            IconButton(onClick = { showDatePicker = true }) {
+                                                Icon(
+                                                    painter = painterResource(Resources.Icon.Calendar),
+                                                    contentDescription = "Select date",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        },
                                         supportingText = dobError?.let { error ->
                                             { Text(error, color = MaterialTheme.colorScheme.error) }
                                         } ?: {
                                             Text(
-                                                "Format: YYYY-MM-DD (e.g., 2000-01-31)",
+                                                "Click to select date",
                                                 fontSize = FontSize.SMALL,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
-                                        },
-                                        keyboardOptions = KeyboardOptions(
-                                            keyboardType = KeyboardType.Text,
-                                            imeAction = ImeAction.Done
-                                        ),
-                                        keyboardActions = KeyboardActions(
-                                            onDone = { focusManager.clearFocus() }
-                                        )
+                                        }
                                     )
                                 }
                             }
@@ -367,6 +391,71 @@ fun UserEditModal(
                 }
             }
         }
+        
+        // Date Picker Dialog
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDatePicker = false
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = { showDatePicker = false }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = rememberDatePickerState(
+                        initialSelectedDateMillis = initialSelectedDateMillis
+                    ),
+                    title = { Text("Select Date of Birth") },
+                    headline = { Text("Please select your date of birth") },
+                    showModeToggle = false,
+                    dateValidator = { timestamp ->
+                        // Validate that the selected date is not in the future
+                        timestamp <= System.currentTimeMillis()
+                    },
+                    colors = DatePickerDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        headlineContentColor = MaterialTheme.colorScheme.onSurface,
+                        weekdayContentColor = MaterialTheme.colorScheme.onSurface,
+                        subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        yearContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        currentYearContentColor = MaterialTheme.colorScheme.primary,
+                        selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedYearContainerColor = MaterialTheme.colorScheme.primary,
+                        dayContentColor = MaterialTheme.colorScheme.onSurface,
+                        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                        todayContentColor = MaterialTheme.colorScheme.primary,
+                        todayDateBorderColor = MaterialTheme.colorScheme.primary,
+                        dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        dayInSelectionRangeContainerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+            }
+            
+            // Update the dob value when a date is selected
+            LaunchedEffect(showDatePicker) {
+                val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialSelectedDateMillis)
+                datePickerState.selectedDateMillis?.let { millis ->
+                    val date = java.time.Instant.ofEpochMilli(millis)
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDate()
+                    dob = date.format(DateTimeFormatter.ISO_LOCAL_DATE) // Format as YYYY-MM-DD
+                }
+            }
+        }
     }
 }
 
@@ -376,6 +465,11 @@ private fun isValidDate(date: String): Boolean {
     val regex = Regex("""^\d{4}-\d{2}-\d{2}$""")
     if (!regex.matches(date)) return false
     
-    // Additional validation could be added here
-    return true
+    try {
+        // Try to parse the date to validate it further
+        LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE)
+        return true
+    } catch (e: Exception) {
+        return false
+    }
 }

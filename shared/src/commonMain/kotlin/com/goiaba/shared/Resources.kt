@@ -5,68 +5,36 @@ import kmpmobilewebadmin.shared.generated.resources.arrows_rotate_solid
 import kmpmobilewebadmin.shared.generated.resources.plus
 import kmpmobilewebadmin.shared.generated.resources.back_arrow
 import kmpmobilewebadmin.shared.generated.resources.book
+import kmpmobilewebadmin.shared.generated.resources.calendar
 import kmpmobilewebadmin.shared.generated.resources.cat
 import kmpmobilewebadmin.shared.generated.resources.check
 import kmpmobilewebadmin.shared.generated.resources.checkmark_image
 import kmpmobilewebadmin.shared.generated.resources.close
 import kmpmobilewebadmin.shared.generated.resources.delete
-import kmpmobilewebadmin.shared.generated.resources.dollar
-import kmpmobilewebadmin.shared.generated.resources.edit
-import kmpmobilewebadmin.shared.generated.resources.google_logo
-import kmpmobilewebadmin.shared.generated.resources.grid
-import kmpmobilewebadmin.shared.generated.resources.home
-import kmpmobilewebadmin.shared.generated.resources.india
-import kmpmobilewebadmin.shared.generated.resources.log_in
-import kmpmobilewebadmin.shared.generated.resources.log_out
-import kmpmobilewebadmin.shared.generated.resources.map_pin
-import kmpmobilewebadmin.shared.generated.resources.menu
-import kmpmobilewebadmin.shared.generated.resources.minus
-import kmpmobilewebadmin.shared.generated.resources.paypal_logo
-import kmpmobilewebadmin.shared.generated.resources.right_arrow
-import kmpmobilewebadmin.shared.generated.resources.search
-import kmpmobilewebadmin.shared.generated.resources.serbia
-import kmpmobilewebadmin.shared.generated.resources.shopping_cart
-import kmpmobilewebadmin.shared.generated.resources.shopping_cart_image
-import kmpmobilewebadmin.shared.generated.resources.unlock
-import kmpmobilewebadmin.shared.generated.resources.usa
-import kmpmobilewebadmin.shared.generated.resources.user
-import kmpmobilewebadmin.shared.generated.resources.vertical_menu
-import kmpmobilewebadmin.shared.generated.resources.warning
-import kmpmobilewebadmin.shared.generated.resources.weight
-import kmpmobilewebadmin.shared.generated.resources.back_arrow
-import kmpmobilewebadmin.shared.generated.resources.book
-import kmpmobilewebadmin.shared.generated.resources.cat
-import kmpmobilewebadmin.shared.generated.resources.check
-import kmpmobilewebadmin.shared.generated.resources.checkmark_image
-import kmpmobilewebadmin.shared.generated.resources.close
-import kmpmobilewebadmin.shared.generated.resources.delete
-import kmpmobilewebadmin.shared.generated.resources.dollar
-import kmpmobilewebadmin.shared.generated.resources.edit
-import kmpmobilewebadmin.shared.generated.resources.google_logo
-import kmpmobilewebadmin.shared.generated.resources.grid
-import kmpmobilewebadmin.shared.generated.resources.home
-import kmpmobilewebadmin.shared.generated.resources.india
-import kmpmobilewebadmin.shared.generated.resources.log_in
-import kmpmobilewebadmin.shared.generated.resources.log_out
-import kmpmobilewebadmin.shared.generated.resources.map_pin
-import kmpmobilewebadmin.shared.generated.resources.menu
-import kmpmobilewebadmin.shared.generated.resources.minus
-import kmpmobilewebadmin.shared.generated.resources.paypal_logo
-import kmpmobilewebadmin.shared.generated.resources.plus
-import kmpmobilewebadmin.shared.generated.resources.right_arrow
-import kmpmobilewebadmin.shared.generated.resources.search
-import kmpmobilewebadmin.shared.generated.resources.serbia
-import kmpmobilewebadmin.shared.generated.resources.shopping_cart
-import kmpmobilewebadmin.shared.generated.resources.shopping_cart_image
-import kmpmobilewebadmin.shared.generated.resources.unlock
-import kmpmobilewebadmin.shared.generated.resources.usa
-import kmpmobilewebadmin.shared.generated.resources.user
-import kmpmobilewebadmin.shared.generated.resources.vertical_menu
-import kmpmobilewebadmin.shared.generated.resources.warning
-import kmpmobilewebadmin.shared.generated.resources.weight
 import kmpmobilewebadmin.shared.generated.resources.dog
-
-
+import kmpmobilewebadmin.shared.generated.resources.dollar
+import kmpmobilewebadmin.shared.generated.resources.edit
+import kmpmobilewebadmin.shared.generated.resources.google_logo
+import kmpmobilewebadmin.shared.generated.resources.grid
+import kmpmobilewebadmin.shared.generated.resources.home
+import kmpmobilewebadmin.shared.generated.resources.india
+import kmpmobilewebadmin.shared.generated.resources.log_in
+import kmpmobilewebadmin.shared.generated.resources.log_out
+import kmpmobilewebadmin.shared.generated.resources.map_pin
+import kmpmobilewebadmin.shared.generated.resources.menu
+import kmpmobilewebadmin.shared.generated.resources.minus
+import kmpmobilewebadmin.shared.generated.resources.paypal_logo
+import kmpmobilewebadmin.shared.generated.resources.right_arrow
+import kmpmobilewebadmin.shared.generated.resources.search
+import kmpmobilewebadmin.shared.generated.resources.serbia
+import kmpmobilewebadmin.shared.generated.resources.shopping_cart
+import kmpmobilewebadmin.shared.generated.resources.shopping_cart_image
+import kmpmobilewebadmin.shared.generated.resources.unlock
+import kmpmobilewebadmin.shared.generated.resources.usa
+import kmpmobilewebadmin.shared.generated.resources.user
+import kmpmobilewebadmin.shared.generated.resources.vertical_menu
+import kmpmobilewebadmin.shared.generated.resources.warning
+import kmpmobilewebadmin.shared.generated.resources.weight
 
 object Resources {
     object Icon {
@@ -94,6 +62,7 @@ object Resources {
         val Delete = Res.drawable.delete
         val Warning = Res.drawable.warning
         val Weight = Res.drawable.weight
+        val Calendar = Res.drawable.calendar
     }
 
     object Image {
