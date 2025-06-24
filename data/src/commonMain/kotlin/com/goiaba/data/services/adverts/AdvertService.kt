@@ -6,6 +6,10 @@ import com.goiaba.data.models.adverts.AdvertGetResponse
 import com.goiaba.data.models.adverts.AdvertUpdateRequest
 import com.goiaba.data.models.adverts.AdvertUpdateResponse
 import com.goiaba.data.models.adverts.CategoryResponse
+import com.goiaba.data.models.adverts.PutAdvertToProfileRequest
+import com.goiaba.data.models.profile.PutAddressToProfileRequest
+import com.goiaba.data.models.profile.PutAddressToProfileResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.networking.ApiClient
 import com.goiaba.shared.util.RequestState
 import io.ktor.client.call.*
@@ -100,6 +104,42 @@ class AdvertService {
         } catch (e: Exception) {
             RequestState.Error("Network error: ${e.message ?: "Unknown error occurred"}")
         }
+    }
+
+    suspend fun addAdvertToProfile(
+        profile: StrapiProfile,
+        advertId: Int
+    ): RequestState<PutAddressToProfileResponse> {
+        val profileDocumentId = profile.data.documentId
+        val advertIdStr = advertId.toString()
+        val addressIdList: List<String> = profile.data.addresses.map { it.id.toString() } +         val advertIdStr = advertId.toString()
+
+
+        return try {
+            val response: HttpResponse = ApiClient.httpClient.put("api/profiles/$profileDocumentId") {
+                setBody(
+                 PutAdvertToProfileRequest(
+                     data = PutAdvertToProfileRequest.
+                )
+            }
+            when (response.status) {
+                HttpStatusCode.OK -> {
+                    val userResponse = response.body<PutAddressToProfileResponse>()
+                    RequestState.Success(userResponse)
+                }
+
+                HttpStatusCode.BadRequest -> RequestState.Error("Invalid user data. Please check your information.")
+                HttpStatusCode.Unauthorized -> RequestState.Error("Unauthorized: Please login to update user.")
+                HttpStatusCode.NotFound -> RequestState.Error("User not found.")
+                HttpStatusCode.Forbidden -> RequestState.Error("You don't have permission to update this user.")
+                HttpStatusCode.InternalServerError -> RequestState.Error("Server error: Please try again later.")
+                else -> RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
+            }
+
+        } catch (e: Exception) {
+            RequestState.Error("Network error: ${e.message ?: "Unknown error occurred"}")
+        }
+//        return TODO("Provide the return value")
     }
 
     suspend fun updateAdvert(advertId: String, request: AdvertUpdateRequest): RequestState<AdvertUpdateResponse> {

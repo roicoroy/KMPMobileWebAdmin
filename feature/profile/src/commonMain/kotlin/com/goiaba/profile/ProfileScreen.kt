@@ -31,6 +31,7 @@ fun ProfileScreen(
     val user by viewModel.user.collectAsState()
     val strapiProfile by viewModel.strapiProfile.collectAsState()
     val updateMessage by viewModel.updateMessage.collectAsState()
+    val userRole by viewModel.userRole.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -118,9 +119,9 @@ fun ProfileScreen(
                         title = "Login Required",
                         subtitle = "Please login to view your profile"
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Button(
                         onClick = navigateBack,
                         colors = ButtonDefaults.buttonColors(
@@ -139,6 +140,117 @@ fun ProfileScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Profile card
+                    item {
+                        strapiProfile.DisplayResult(
+                            onLoading = {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            CircularProgressIndicator()
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Text(
+                                                text = "Loading profile data...",
+                                                fontSize = FontSize.REGULAR,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            onSuccess = { profileData ->
+                                StrapiProfileCard(
+                                    profile = profileData,
+                                )
+                            },
+                            onError = { message ->
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer
+                                    ),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = "Failed to load profile data",
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                        Text(
+                                            text = message,
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                            fontSize = FontSize.SMALL
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        TextButton(
+                                            onClick = { viewModel.refreshProfile() }
+                                        ) {
+                                            Text("Retry")
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                    // Navigation buttons
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Button(
+                                onClick = navigateToAdvertsListScreen,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "📢",
+                                        fontSize = FontSize.LARGE
+                                    )
+                                    Text("My Adverts")
+                                }
+                            }
+
+                            Button(
+                                onClick = navigateToAddressListScreen,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "🏠",
+                                        fontSize = FontSize.LARGE
+                                    )
+                                    Text("My Addresses")
+                                }
+                            }
+                        }
+                    }
                     // User card
                     item {
                         user.DisplayResult(
@@ -205,123 +317,6 @@ fun ProfileScreen(
                             }
                         )
                     }
-
-                    // Profile card
-                    item {
-                        strapiProfile.DisplayResult(
-                            onLoading = {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(16.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(200.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            CircularProgressIndicator()
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                            Text(
-                                                text = "Loading profile data...",
-                                                fontSize = FontSize.REGULAR,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                }
-                            },
-                            onSuccess = { profileData ->
-                                StrapiProfileCard(
-                                    profile = profileData,
-                                    onImageClick = {
-                                        // Handle image click for upload
-                                    }
-                                )
-                            },
-                            onError = { message ->
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer
-                                    ),
-                                    shape = RoundedCornerShape(16.dp)
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            text = "Failed to load profile data",
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onErrorContainer
-                                        )
-                                        Text(
-                                            text = message,
-                                            color = MaterialTheme.colorScheme.onErrorContainer,
-                                            fontSize = FontSize.SMALL
-                                        )
-                                        Spacer(modifier = Modifier.height(12.dp))
-                                        TextButton(
-                                            onClick = { viewModel.refreshProfile() }
-                                        ) {
-                                            Text("Retry")
-                                        }
-                                    }
-                                }
-                            }
-                        )
-                    }
-
-                    // Navigation buttons
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Button(
-                                onClick = navigateToAdvertsListScreen,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "📢",
-                                        fontSize = FontSize.LARGE
-                                    )
-                                    Text("My Adverts")
-                                }
-                            }
-
-                            Button(
-                                onClick = navigateToAddressListScreen,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary
-                                )
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "🏠",
-                                        fontSize = FontSize.LARGE
-                                    )
-                                    Text("My Addresses")
-                                }
-                            }
-                        }
-                    }
-
                     // Add some bottom padding
                     item {
                         Spacer(modifier = Modifier.height(16.dp))

@@ -1,4 +1,4 @@
-package com.goiaba.data.models.profile
+package com.goiaba.data.models.profile.adress
 
 
 import kotlinx.serialization.SerialName
@@ -48,32 +48,32 @@ import kotlinx.serialization.Serializable
   ]
 }
 */
-//@Serializable
-//data class UsersMeResponse2222(
-//    @SerialName("profileImage")
-//    val profileImage: StrapiUser.ProfileImage = ProfileImage(),
-//    @SerialName("addresses")
-//    val addresses: List<Addresse>,
-//    @SerialName("adverts")
-//    val adverts: List<Advert>,
-//    @SerialName("blocked")
-//    val blocked: Boolean,
-//    @SerialName("confirmed")
-//    val confirmed: Boolean,
-//    @SerialName("createdAt")
-//    val createdAt: String,
-//    @SerialName("documentId")
-//    val documentId: String,
-//    @SerialName("email")
-//    val email: String,
-//    @SerialName("id")
-//    val id: Int,
-//    @SerialName("provider")
-//    val provider: String,
-//    @SerialName("publishedAt")
-//    val publishedAt: String,
-//    @SerialName("updatedAt")
-//    val updatedAt: String,
-//    @SerialName("username")
-//    val username: String
-//)
+@Serializable
+data class Addresse(
+    @SerialName("city")
+    val city: String?,
+    @SerialName("country")
+    val country: String?,
+    @SerialName("createdAt")
+    val createdAt: String,
+    @SerialName("documentId")
+    val documentId: String,
+    @SerialName("first_line_address")
+    val firstLineAddress: String,
+    @SerialName("first_name")
+    val firstName: String,
+    @SerialName("id")
+    val id: Int,
+    @SerialName("last_name")
+    val lastName: String,
+    @SerialName("phone_number")
+    val phoneNumber: String?,
+    @SerialName("post_code")
+    val postCode: String,
+    @SerialName("publishedAt")
+    val publishedAt: String,
+    @SerialName("second_line_address")
+    val secondLineAddress: String?,
+    @SerialName("updatedAt")
+    val updatedAt: String
+)

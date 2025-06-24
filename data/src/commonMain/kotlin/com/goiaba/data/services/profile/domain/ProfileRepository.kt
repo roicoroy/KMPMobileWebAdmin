@@ -1,12 +1,11 @@
 package com.goiaba.data.services.profile.domain
 
-import com.goiaba.data.models.profile.AddUserToAddressResponse
-import com.goiaba.data.models.profile.AddressCreateRequest
-import com.goiaba.data.models.profile.AddressCreateResponse
-import com.goiaba.data.models.profile.AddressUpdateRequest
-import com.goiaba.data.models.profile.AddressUpdateResponse
-import com.goiaba.data.models.profile.UserUpdateRequest
-import com.goiaba.data.models.profile.UserUpdateResponse
+import com.goiaba.data.models.profile.PutAddressToProfileResponse
+import com.goiaba.data.models.profile.adress.AddUserToAddressResponse
+import com.goiaba.data.models.profile.adress.AddressCreateRequest
+import com.goiaba.data.models.profile.adress.AddressCreateResponse
+import com.goiaba.data.models.profile.adress.AddressUpdateRequest
+import com.goiaba.data.models.profile.adress.AddressUpdateResponse
 import com.goiaba.data.models.profile.strapiUser.PutProfileResponse
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
@@ -79,10 +78,10 @@ interface ProfileRepository {
      * @param addressId The ID of the address to which the user is being assigned.
      * @return A Flow that emits the result of linking the user and address.
      */
-    suspend fun addUserToAddress(
-        userId: Int,
-        addressId: String
-    ): Flow<RequestState<AddUserToAddressResponse>>
+    suspend fun addAddressToProfile(
+        profile: StrapiProfile,
+        addressId: Int
+    ): Flow<RequestState<PutAddressToProfileResponse>>
 
     /**
      * Uploads a user-selected image to the server and links it to the user's profile as an avatar.

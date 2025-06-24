@@ -1,4 +1,4 @@
-package com.goiaba.data.models.profile
+package com.goiaba.data.models.profile.adress
 
 
 import kotlinx.serialization.SerialName

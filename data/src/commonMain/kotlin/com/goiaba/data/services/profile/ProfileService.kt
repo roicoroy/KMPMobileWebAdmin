@@ -1,13 +1,11 @@
 package com.goiaba.data.services.profile
 
-import com.goiaba.data.models.profile.AddUserToAddressRequest
-import com.goiaba.data.models.profile.AddUserToAddressResponse
-import com.goiaba.data.models.profile.AddressCreateRequest
-import com.goiaba.data.models.profile.AddressCreateResponse
-import com.goiaba.data.models.profile.AddressUpdateRequest
-import com.goiaba.data.models.profile.AddressUpdateResponse
-import com.goiaba.data.models.profile.UserUpdateRequest
-import com.goiaba.data.models.profile.UserUpdateResponse
+import com.goiaba.data.models.profile.PutAddressToProfileRequest
+import com.goiaba.data.models.profile.PutAddressToProfileResponse
+import com.goiaba.data.models.profile.adress.AddressCreateRequest
+import com.goiaba.data.models.profile.adress.AddressCreateResponse
+import com.goiaba.data.models.profile.adress.AddressUpdateRequest
+import com.goiaba.data.models.profile.adress.AddressUpdateResponse
 import com.goiaba.data.models.profile.strapiUser.PutProfileResponse
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
@@ -20,6 +18,9 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 
+/**
+ * Service class responsible for managing user profiles and related operations.
+ */
 class ProfileService {
     suspend fun getUsersMe(): RequestState<StrapiUser> {
         return try {
@@ -236,50 +237,37 @@ class ProfileService {
         }
     }
 
-    suspend fun addUserToAddress(
-        userId: Int,
-        addressId: String
-    ): RequestState<AddUserToAddressResponse> {
+    suspend fun addAddressToProfile(
+        profile: StrapiProfile,
+        addressId: Int
+    ): RequestState<PutAddressToProfileResponse> {
+        val profileDocumentId = profile.data.documentId
+
+        val addressIdStr = addressId.toString()
+        val addressIdList: List<String> = profile.data.addresses.map { it.id.toString() } + addressIdStr
+
         return try {
-            val response: HttpResponse = ApiClient.httpClient.put("api/addresses/$addressId") {
+            val response: HttpResponse = ApiClient.httpClient.put("api/profiles/$profileDocumentId") {
                 setBody(
-                    AddUserToAddressRequest(
-                        data = AddUserToAddressRequest.Data(
-                            user = userId.toInt()
+                    PutAddressToProfileRequest(
+                        data = PutAddressToProfileRequest.Data(
+                            addresses = addressIdList
                         )
                     )
                 )
             }
-
             when (response.status) {
                 HttpStatusCode.OK -> {
-                    val userResponse = response.body<AddUserToAddressResponse>()
+                    val userResponse = response.body<PutAddressToProfileResponse>()
                     RequestState.Success(userResponse)
                 }
 
-                HttpStatusCode.BadRequest -> {
-                    RequestState.Error("Invalid user data. Please check your information.")
-                }
-
-                HttpStatusCode.Unauthorized -> {
-                    RequestState.Error("Unauthorized: Please login to update user")
-                }
-
-                HttpStatusCode.NotFound -> {
-                    RequestState.Error("User not found")
-                }
-
-                HttpStatusCode.Forbidden -> {
-                    RequestState.Error("You don't have permission to update this user")
-                }
-
-                HttpStatusCode.InternalServerError -> {
-                    RequestState.Error("Server error: Please try again later")
-                }
-
-                else -> {
-                    RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
-                }
+                HttpStatusCode.BadRequest -> RequestState.Error("Invalid user data. Please check your information.")
+                HttpStatusCode.Unauthorized -> RequestState.Error("Unauthorized: Please login to update user.")
+                HttpStatusCode.NotFound -> RequestState.Error("User not found.")
+                HttpStatusCode.Forbidden -> RequestState.Error("You don't have permission to update this user.")
+                HttpStatusCode.InternalServerError -> RequestState.Error("Server error: Please try again later.")
+                else -> RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
             }
 
         } catch (e: Exception) {

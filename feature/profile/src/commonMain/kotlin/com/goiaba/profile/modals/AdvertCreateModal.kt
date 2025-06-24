@@ -45,7 +45,7 @@ fun AdvertCreateModal(
     // Form state
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<CategoryResponse.Category?>(null) }
+    var selectedCategoryId by remember { mutableStateOf<String?>(null) }
     var slug by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     
@@ -59,7 +59,7 @@ fun AdvertCreateModal(
         if (isVisible) {
             title = ""
             description = ""
-            selectedCategory = null
+            selectedCategoryId = null
             slug = ""
             titleError = null
             descriptionError = null
@@ -84,7 +84,7 @@ fun AdvertCreateModal(
             descriptionError = null
         }
         
-        if (selectedCategory == null) {
+        if (selectedCategoryId == null) {
             categoryError = "Please select a category"
             isValid = false
         } else {
@@ -219,7 +219,7 @@ fun AdvertCreateModal(
                                 onExpandedChange = { expanded = !expanded && !isLoading }
                             ) {
                                 OutlinedTextField(
-                                    value = selectedCategory?.name ?: "",
+                                    value = selectedCategoryId ?: "",
                                     onValueChange = { },
                                     readOnly = true,
                                     label = { Text("Category") },
@@ -259,7 +259,7 @@ fun AdvertCreateModal(
                                                 }
                                             },
                                             onClick = {
-                                                selectedCategory = category
+                                                selectedCategoryId = category.id.toString()
                                                 categoryError = null
                                                 expanded = false
                                             }
@@ -319,7 +319,7 @@ fun AdvertCreateModal(
                                         onSave(
                                             title.trim(),
                                             description.trim(),
-                                            selectedCategory!!.documentId,
+                                            selectedCategoryId.toString(),
                                             slug.takeIf { it.isNotBlank() }
                                         )
                                     }

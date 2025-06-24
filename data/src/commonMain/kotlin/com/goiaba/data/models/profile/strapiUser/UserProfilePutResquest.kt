@@ -1,6 +1,5 @@
 package com.goiaba.data.models.profile.strapiUser
 
-
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

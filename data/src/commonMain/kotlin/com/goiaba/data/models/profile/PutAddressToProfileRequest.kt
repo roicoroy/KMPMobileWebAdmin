@@ -1,18 +1,16 @@
 package com.goiaba.data.models.profile
 
-
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-//http://localhost:1337/api/addresses/:addressId
 @Serializable
-data class PutAddressToUserRequest(
+data class PutAddressToProfileRequest(
     @SerialName("data")
     val `data`: Data = Data()
 ) {
     @Serializable
     data class Data(
-        @SerialName("user")
-        val userId: Int = 0
+        @SerialName("addresses")
+        val addresses: List<String> = listOf()
     )
 }

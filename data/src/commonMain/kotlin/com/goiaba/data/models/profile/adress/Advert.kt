@@ -1,4 +1,4 @@
-package com.goiaba.data.models.profile
+package com.goiaba.data.models.profile.adress
 
 
 import kotlinx.serialization.SerialName
@@ -49,31 +49,21 @@ import kotlinx.serialization.Serializable
 }
 */
 @Serializable
-data class Addresse(
-    @SerialName("city")
-    val city: String?,
-    @SerialName("country")
-    val country: String?,
+data class Advert(
     @SerialName("createdAt")
     val createdAt: String,
+    @SerialName("description")
+    val description: String?,
     @SerialName("documentId")
     val documentId: String,
-    @SerialName("first_line_address")
-    val firstLineAddress: String,
-    @SerialName("first_name")
-    val firstName: String,
     @SerialName("id")
     val id: Int,
-    @SerialName("last_name")
-    val lastName: String,
-    @SerialName("phone_number")
-    val phoneNumber: String?,
-    @SerialName("post_code")
-    val postCode: String,
     @SerialName("publishedAt")
     val publishedAt: String,
-    @SerialName("second_line_address")
-    val secondLineAddress: String?,
+    @SerialName("slug")
+    val slug: String?,
+    @SerialName("title")
+    val title: String,
     @SerialName("updatedAt")
     val updatedAt: String
 )

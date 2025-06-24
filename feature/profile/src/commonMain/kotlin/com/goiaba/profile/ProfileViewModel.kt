@@ -5,10 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.goiaba.data.models.adverts.AdvertCreateRequest
 import com.goiaba.data.models.adverts.AdvertUpdateRequest
 import com.goiaba.data.models.adverts.CategoryResponse
-import com.goiaba.data.models.profile.AddressCreateRequest
-import com.goiaba.data.models.profile.AddressUpdateRequest
-import com.goiaba.data.models.profile.UserUpdateRequest
-import com.goiaba.data.models.profile.strapiUser.PutProfileResponse
+import com.goiaba.data.models.profile.adress.AddressCreateRequest
+import com.goiaba.data.models.profile.adress.AddressUpdateRequest
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.models.profile.strapiUser.UserProfilePutResquest
@@ -25,7 +23,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class ProfileViewModel : ViewModel(), KoinComponent {
-
     private val profileRepository: ProfileRepository by inject()
     private val loggerRepository: LoggerRepository by inject()
     private val advertRepository: AdvertRepository by inject()
@@ -83,25 +80,28 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 // Load user data first
                 profileRepository.getUsersMe().collect { userResult ->
                     _user.value = userResult
-                    
+
                     when (userResult) {
                         is RequestState.Success -> {
                             _userRole.value = userResult.data.role.name
-                            
+
                             // Check if user has a profile
                             if (userResult.data.profile.documentId.isNotEmpty()) {
                                 // Load the profile data
-                                profileRepository.getUserProfile(userResult.data.profile.documentId).collect { profileResult ->
-                                    _strapiProfile.value = profileResult
-                                }
+                                profileRepository.getUserProfile(userResult.data.profile.documentId)
+                                    .collect { profileResult ->
+                                        _strapiProfile.value = profileResult
+                                    }
                             } else {
                                 // User doesn't have a profile yet
                                 _strapiProfile.value = RequestState.Error("No profile found for this user")
                             }
                         }
+
                         is RequestState.Error -> {
                             _strapiProfile.value = RequestState.Error("Failed to load user data: ${userResult.message}")
                         }
+
                         else -> {
                             // Keep loading state
                         }
@@ -136,12 +136,8 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                             val uploadedFile = result.data.files.firstOrNull()
                             if (uploadedFile != null) {
                                 _uploadedImageId.value = uploadedFile.id
-                                if (uploadedFile.id != null) {
-                                    updateUserProfile(uploadedFile.id.toString())
-                                }
-
+                                updateUserProfile(uploadedFile.id.toString())
                                 _updateMessage.value = "Image uploaded successfully!"
-
                             } else {
                                 _updateMessage.value = "Image upload failed: No file returned"
                             }
@@ -163,6 +159,11 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     }
 
     fun updateUserProfile(uploadedFileId: String) {
+        val IMAGE_UPLOAD_SUCCESSFUL = "Image uploaded successfully!"
+        val IMAGE_UPLOAD_FAILED_NO_FILE = "Image upload failed: No file returned"
+        val IMAGE_UPLOAD_FAILED_UNKNOWN = "Image upload failed: Unknown error"
+        val IMAGE_UPLOAD_FAILED = "Image upload failed"
+
         viewModelScope.launch {
             try {
                 val currentUser = _user.value.getSuccessDataOrNull()
@@ -176,24 +177,20 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                                 )
                             )
                         ).collect { result ->
-                        when (result) {
-                            is RequestState.Loading -> {
-                                // Loading state is handled in the UI
-                            }
-                            is RequestState.Success -> {
-                                _updateMessage.value = "Profile Updated successfully!"
-                                refreshProfile()
+                            when (result) {
+                                is RequestState.Loading -> return@collect // Handled in UI
+                                is RequestState.Success -> {
+                                    _updateMessage.value = "Profile Updated successfully!"
+                                    refreshProfile()
+                                }
+
+                                is RequestState.Error -> _updateMessage.value =
+                                    "$IMAGE_UPLOAD_FAILED: ${result.message}"
+
+                                else -> _updateMessage.value = IMAGE_UPLOAD_FAILED_UNKNOWN
                             }
 
-                            is RequestState.Error -> {
-                                _updateMessage.value = "Profile update failed: ${result.message}"
-                            }
-
-                            else -> {
-                                _updateMessage.value = "Profile update failed: Unknown error"
-                            }
                         }
-                    }
                 } else {
                     _updateMessage.value = "No user profile found to update"
                 }
@@ -218,7 +215,6 @@ class ProfileViewModel : ViewModel(), KoinComponent {
             _updateMessage.value = null
 
             try {
-                // Step 1: Create the address
                 val request = AddressCreateRequest(
                     data = AddressCreateRequest.AddressCreateData(
                         firstName = firstName,
@@ -243,7 +239,11 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                             val currentUser = _user.value.getSuccessDataOrNull()
                             if (currentUser != null) {
                                 // Step 3: Update user with new address relation
-                                addUserToAddress(currentUser.id, result.data.data.documentId)
+                                val profileId = _strapiProfile.value.getSuccessData().data.id
+                                val profile = _strapiProfile.value.getSuccessData()
+                                val newAddressId = result.data.data.id
+                                addAddressToProfile(profile, newAddressId)
+//                                addUserToAddress(currentUser.id, result.data.data.documentId)
                             } else {
                                 _isUpdatingAddress.value = false
                                 _updateMessage.value =
@@ -269,14 +269,13 @@ class ProfileViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private suspend fun addUserToAddress(userId: Int, addressId: String) {
-        try {
-            profileRepository.addUserToAddress(userId, addressId).collect { result ->
+    private suspend fun addAddressToProfile(profileId: StrapiProfile, newAddressId: Int) {
+        return try {
+            profileRepository.addAddressToProfile(profileId, newAddressId).collect { result ->
                 when (result) {
                     is RequestState.Success -> {
                         _isUpdatingAddress.value = false
                         _updateMessage.value = "Address created and linked successfully!"
-                        // Refresh profile to get updated data
                         loadUserProfile()
                     }
 
@@ -284,7 +283,6 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                         _isUpdatingAddress.value = false
                         _updateMessage.value =
                             "Address created but failed to link: ${result.message}"
-                        // Still refresh to show the address
                         loadUserProfile()
                     }
 
@@ -298,6 +296,7 @@ class ProfileViewModel : ViewModel(), KoinComponent {
             _updateMessage.value = "Address created but linking failed: ${e.message}"
             loadUserProfile()
         }
+
     }
 
     fun updateAddress(
@@ -411,11 +410,12 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 if (currentUser != null) {
                     val request = AdvertCreateRequest(
                         data = AdvertCreateRequest.AdvertCreateData(
-                            title = title,
-                            description = description,
-                            category = categoryId,
-                            slug = slug,
-                            user = currentUser.documentId
+                            title = "Test",
+                            description = "description",
+                            category = listOf(categoryId),
+                            cover = "30",
+                            user = currentUser.id.toString(),
+                            slug = "test"
                         )
                     )
 
@@ -426,16 +426,23 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                             }
 
                             is RequestState.Success -> {
-                                _isUpdatingAdvert.value = false
-                                _updateMessage.value = "Advert created successfully!"
-                                loadUserProfile() // Refresh to show new advert
-                            }
+                                val currentUser = _user.value.getSuccessDataOrNull()
+                                if (currentUser != null) {
+                                    val newAdvertId = result.data.data.id
+                                    val profile = _strapiProfile.value.getSuccessData()
 
+                                    addAdvertToProfile(profile, newAdvertId)
+                                } else {
+                                    _isUpdatingAddress.value = false
+                                    _updateMessage.value =
+                                        "Address created but failed to link to user profile"
+                                    loadUserProfile() // Still refresh to show the address
+                                }
+                            }
                             is RequestState.Error -> {
                                 _isUpdatingAdvert.value = false
                                 _updateMessage.value = "Failed to create advert: ${result.message}"
                             }
-
                             else -> {
                                 _isUpdatingAdvert.value = false
                             }
@@ -449,6 +456,35 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 _isUpdatingAdvert.value = false
                 _updateMessage.value = "Error creating advert: ${e.message}"
             }
+        }
+    }
+
+    private suspend fun addAdvertToProfile(profile: StrapiProfile, newAddressId: Int) {
+        return try {
+            advertRepository.addAdvertToProfile(profile, newAddressId).collect { result ->
+                when (result) {
+                    is RequestState.Success -> {
+                        _isUpdatingAddress.value = false
+                        _updateMessage.value = "Address created and linked successfully!"
+                        loadUserProfile()
+                    }
+
+                    is RequestState.Error -> {
+                        _isUpdatingAddress.value = false
+                        _updateMessage.value =
+                            "Address created but failed to link: ${result.message}"
+                        loadUserProfile()
+                    }
+
+                    else -> {
+                        _isUpdatingAdvert.value = false
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            _isUpdatingAddress.value = false
+            _updateMessage.value = "Address created but linking failed: ${e.message}"
+            loadUserProfile()
         }
     }
 

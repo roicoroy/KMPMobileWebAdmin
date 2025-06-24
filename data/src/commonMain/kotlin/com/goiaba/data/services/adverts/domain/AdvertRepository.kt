@@ -6,6 +6,8 @@ import com.goiaba.data.models.adverts.AdvertGetResponse
 import com.goiaba.data.models.adverts.AdvertUpdateRequest
 import com.goiaba.data.models.adverts.AdvertUpdateResponse
 import com.goiaba.data.models.adverts.CategoryResponse
+import com.goiaba.data.models.profile.PutAddressToProfileResponse
+import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.shared.util.RequestState
 import kotlinx.coroutines.flow.Flow
 
@@ -13,6 +15,12 @@ interface AdvertRepository {
     fun getAdverts(): Flow<RequestState<AdvertGetResponse>>
     fun getCategories(): Flow<RequestState<CategoryResponse>>
     suspend fun createAdvert(request: AdvertCreateRequest): Flow<RequestState<AdvertCreateResponse>>
+
+    suspend fun addAdvertToProfile(
+        profile: StrapiProfile,
+        advertId: Int
+    ): Flow<RequestState<PutAddressToProfileResponse>>
+
     suspend fun updateAdvert(advertId: String, request: AdvertUpdateRequest): Flow<RequestState<AdvertUpdateResponse>>
     suspend fun deleteAdvert(advertId: String): Flow<RequestState<Boolean>>
 }

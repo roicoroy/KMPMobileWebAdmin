@@ -1,12 +1,11 @@
 package com.goiaba.data.services.profile
 
-import com.goiaba.data.models.profile.AddUserToAddressResponse
-import com.goiaba.data.models.profile.AddressCreateRequest
-import com.goiaba.data.models.profile.AddressCreateResponse
-import com.goiaba.data.models.profile.AddressUpdateRequest
-import com.goiaba.data.models.profile.AddressUpdateResponse
-import com.goiaba.data.models.profile.UserUpdateRequest
-import com.goiaba.data.models.profile.UserUpdateResponse
+import com.goiaba.data.models.profile.PutAddressToProfileResponse
+import com.goiaba.data.models.profile.adress.AddUserToAddressResponse
+import com.goiaba.data.models.profile.adress.AddressCreateRequest
+import com.goiaba.data.models.profile.adress.AddressCreateResponse
+import com.goiaba.data.models.profile.adress.AddressUpdateRequest
+import com.goiaba.data.models.profile.adress.AddressUpdateResponse
 import com.goiaba.data.models.profile.strapiUser.PutProfileResponse
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
@@ -172,18 +171,15 @@ class ProfileImpl : ProfileRepository {
      * @param addressId The ID of the address being linked to the user.
      * @return A Flow emitting the result of the linking operation.
      */
-    override suspend fun addUserToAddress(
-        userId: Int,
-        addressId: String,
-    ): Flow<RequestState<AddUserToAddressResponse>> =
+    override suspend fun addAddressToProfile(
+        profile: StrapiProfile,
+        addressId: Int
+    ): Flow<RequestState<PutAddressToProfileResponse>> =
         flow {
             emit(RequestState.Loading) // Emit progress state.
-
             try {
                 delay(300) // Simulate latency.
-
-                // Call the API service to perform the linking and emit the response.
-                val result = apiService.addUserToAddress(userId, addressId)
+                val result = apiService.addAddressToProfile(profile, addressId)
                 emit(result)
             } catch (e: Exception) {
                 emit(RequestState.Error("Failed to link user to address: ${e.message}"))

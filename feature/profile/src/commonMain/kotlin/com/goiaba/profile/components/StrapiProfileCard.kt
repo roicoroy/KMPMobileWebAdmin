@@ -1,9 +1,15 @@
 package com.goiaba.profile.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -12,16 +18,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.goiaba.data.models.profile.strapiUser.StrapiProfile
+import com.goiaba.profile.ProfileViewModel
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
+import com.goiaba.shared.util.ImagePickerResult
+import com.goiaba.shared.util.rememberImagePicker
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun StrapiProfileCard(
     profile: StrapiProfile,
     modifier: Modifier = Modifier,
-    onImageClick: (() -> Unit)? = null
 ) {
+    val viewModel = koinViewModel<ProfileViewModel>()
+
+    var shouldPickImage by remember { mutableStateOf(false) }
+    val imagePicker = rememberImagePicker()
+
+    LaunchedEffect(shouldPickImage) {
+        if (shouldPickImage) {
+            try {
+                val result = imagePicker.pickImage()
+                when (result) {
+                    is ImagePickerResult.Success -> {
+                        val saved = imagePicker.saveImageToGallery(
+                            result.imageData,
+                            result.fileName
+                        )
+                        if (saved) {
+                            viewModel.uploadProfileImage(result.imageData, result.fileName)
+                        }
+                    }
+                    is ImagePickerResult.Error -> {}
+                    null -> {}
+                }
+            } catch (e: Exception) {
+                // Handle exception
+            } finally {
+                shouldPickImage = false
+            }
+        }
+    }
+
+
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -54,11 +94,7 @@ fun StrapiProfileCard(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(RoundedCornerShape(50.dp))
-                                    .then(
-                                        if (onImageClick != null) {
-                                            Modifier
-                                        } else Modifier
-                                    ),
+                                    .clickable { shouldPickImage = true },
                                 contentScale = ContentScale.Crop,
                                 placeholder = painterResource(Resources.Image.Cat),
                                 error = painterResource(Resources.Image.Cat)
