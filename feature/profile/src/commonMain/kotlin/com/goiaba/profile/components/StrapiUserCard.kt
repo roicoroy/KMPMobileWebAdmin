@@ -1,5 +1,6 @@
 package com.goiaba.profile.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -16,7 +17,8 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun StrapiUserCard(
     user: StrapiUser,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onEditClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -67,7 +69,7 @@ fun StrapiUserCard(
                     )
                 }
 
-                // Status badges
+                // Status badges and edit button
                 Column(
                     horizontalAlignment = Alignment.End
                 ) {
@@ -99,6 +101,69 @@ fun StrapiUserCard(
                                 fontSize = FontSize.SMALL,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
+                    
+                    if (onEditClick != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Button(
+                            onClick = onEditClick,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(Resources.Icon.Edit),
+                                contentDescription = "Edit profile",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Edit",
+                                fontSize = FontSize.SMALL
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // User details section
+            if (user.profile.dob.isNotBlank()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "🎂",
+                            fontSize = FontSize.MEDIUM,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "Date of Birth",
+                                fontSize = FontSize.SMALL,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = user.profile.dob,
+                                fontSize = FontSize.REGULAR,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }

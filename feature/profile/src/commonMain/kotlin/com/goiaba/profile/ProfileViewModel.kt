@@ -59,6 +59,10 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     private val _isUpdatingAdvert = MutableStateFlow(false)
     val isUpdatingAdvert: StateFlow<Boolean> = _isUpdatingAdvert.asStateFlow()
 
+    // User editing state
+    private val _isUpdatingUser = MutableStateFlow(false)
+    val isUpdatingUser: StateFlow<Boolean> = _isUpdatingUser.asStateFlow()
+
     private val _updateMessage = MutableStateFlow<String?>(null)
     val updateMessage: StateFlow<String?> = _updateMessage.asStateFlow()
 
@@ -152,6 +156,62 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 }
             } catch (e: Exception) {
                 _uploadedImages.value = RequestState.Error("Failed to load images: ${e.message}")
+            }
+        }
+    }
+
+    // Update user profile information
+    fun updateUserProfile(username: String, dob: String) {
+        viewModelScope.launch {
+            _isUpdatingUser.value = true
+            _updateMessage.value = null
+
+            try {
+                val currentUser = _user.value.getSuccessDataOrNull()
+                if (currentUser != null && currentUser.profile.documentId.isNotEmpty()) {
+                    // Update profile with new DOB
+                    profileRepository
+                        .updateProfile(
+                            currentUser.profile.documentId,
+                            UserProfilePutResquest(
+                                data = UserProfilePutResquest.Data(
+                                    dob = dob
+                                )
+                            )
+                        ).collect { result ->
+                            when (result) {
+                                is RequestState.Success -> {
+                                    // Now update username if it changed
+                                    if (username != currentUser.username) {
+                                        // This would require a separate API call to update the username
+                                        // For now, we'll just show a message
+                                        _isUpdatingUser.value = false
+                                        _updateMessage.value = "Profile updated successfully! Note: Username changes are not supported in this version."
+                                        refreshProfile()
+                                    } else {
+                                        _isUpdatingUser.value = false
+                                        _updateMessage.value = "Profile updated successfully!"
+                                        refreshProfile()
+                                    }
+                                }
+
+                                is RequestState.Error -> {
+                                    _isUpdatingUser.value = false
+                                    _updateMessage.value = "Failed to update profile: ${result.message}"
+                                }
+
+                                else -> {
+                                    // Keep loading state
+                                }
+                            }
+                        }
+                } else {
+                    _isUpdatingUser.value = false
+                    _updateMessage.value = "No user profile found to update"
+                }
+            } catch (e: Exception) {
+                _isUpdatingUser.value = false
+                _updateMessage.value = "Error updating profile: ${e.message}"
             }
         }
     }

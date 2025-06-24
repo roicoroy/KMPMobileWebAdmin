@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.goiaba.profile.components.StrapiProfileCard
 import com.goiaba.profile.components.StrapiUserCard
+import com.goiaba.profile.modals.UserEditModal
 import com.goiaba.shared.*
 import com.goiaba.shared.components.InfoCard
 import com.goiaba.shared.util.DisplayResult
@@ -32,6 +33,10 @@ fun ProfileScreen(
     val strapiProfile by viewModel.strapiProfile.collectAsState()
     val updateMessage by viewModel.updateMessage.collectAsState()
     val userRole by viewModel.userRole.collectAsState()
+    val isUpdatingUser by viewModel.isUpdatingUser.collectAsState()
+
+    // Modal state
+    var showUserEditModal by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -280,7 +285,10 @@ fun ProfileScreen(
                                 }
                             },
                             onSuccess = { userData ->
-                                StrapiUserCard(user = userData)
+                                StrapiUserCard(
+                                    user = userData,
+                                    onEditClick = { showUserEditModal = true }
+                                )
                             },
                             onError = { message ->
                                 Card(
@@ -324,5 +332,17 @@ fun ProfileScreen(
                 }
             }
         }
+
+        // User Edit Modal
+        UserEditModal(
+            isVisible = showUserEditModal,
+            user = user.getSuccessDataOrNull(),
+            isLoading = isUpdatingUser,
+            onDismiss = { showUserEditModal = false },
+            onSave = { username, dob ->
+                viewModel.updateUserProfile(username, dob)
+                showUserEditModal = false
+            }
+        )
     }
 }
