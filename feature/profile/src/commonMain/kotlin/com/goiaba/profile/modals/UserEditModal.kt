@@ -25,8 +25,6 @@ import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
 import org.jetbrains.compose.resources.painterResource
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,9 +46,9 @@ fun UserEditModal(
     
     // Date picker state
     var showDatePicker by remember { mutableStateOf(false) }
-    
-    // Parse initial date if available
-    var initialSelectedDateMillis by remember { mutableStateOf<Long?>(null) }
+    var selectedYear by remember { mutableStateOf(2000) }
+    var selectedMonth by remember { mutableStateOf(1) }
+    var selectedDay by remember { mutableStateOf(1) }
     
     // Error states
     var usernameError by remember { mutableStateOf<String?>(null) }
@@ -64,10 +62,17 @@ fun UserEditModal(
         // Parse the date if it's in the correct format
         if (dob.matches(Regex("""^\d{4}-\d{2}-\d{2}$"""))) {
             try {
-                val localDate = LocalDate.parse(dob)
-                initialSelectedDateMillis = localDate.toEpochDay() * 24 * 60 * 60 * 1000
+                val parts = dob.split("-")
+                if (parts.size == 3) {
+                    selectedYear = parts[0].toInt()
+                    selectedMonth = parts[1].toInt()
+                    selectedDay = parts[2].toInt()
+                }
             } catch (e: Exception) {
-                initialSelectedDateMillis = null
+                // If parsing fails, use default values
+                selectedYear = 2000
+                selectedMonth = 1
+                selectedDay = 1
             }
         }
         
@@ -391,23 +396,15 @@ fun UserEditModal(
             }
         }
         
-        // Date Picker Dialog
+        // Custom Date Picker Dialog
         if (showDatePicker) {
-            val datePickerState = rememberDatePickerState(
-                initialSelectedDateMillis = initialSelectedDateMillis
-            )
-            
             DatePickerDialog(
                 onDismissRequest = { showDatePicker = false },
                 confirmButton = {
-                    Button(
+                    TextButton(
                         onClick = {
-                            datePickerState.selectedDateMillis?.let { millis ->
-                                val date = java.time.Instant.ofEpochMilli(millis)
-                                    .atZone(java.time.ZoneId.systemDefault())
-                                    .toLocalDate()
-                                dob = date.format(DateTimeFormatter.ISO_LOCAL_DATE) // Format as YYYY-MM-DD
-                            }
+                            // Format the date as YYYY-MM-DD
+                            dob = String.format("%04d-%02d-%02d", selectedYear, selectedMonth, selectedDay)
                             showDatePicker = false
                         }
                     ) {
@@ -415,23 +412,177 @@ fun UserEditModal(
                     }
                 },
                 dismissButton = {
-                    OutlinedButton(
+                    TextButton(
                         onClick = { showDatePicker = false }
                     ) {
                         Text("Cancel")
                     }
                 }
             ) {
-                DatePicker(
-                    state = datePickerState,
-                    title = { Text("Select Date of Birth") },
-                    headline = { Text("Please select your date of birth") },
-                    showModeToggle = false,
-                    dateValidator = { timestamp ->
-                        // Validate that the selected date is not in the future
-                        timestamp <= System.currentTimeMillis()
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Select Date of Birth",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    
+                    // Year picker
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Year:",
+                            modifier = Modifier.width(80.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        
+                        // Simple number picker for year
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { 
+                                    if (selectedYear > 1900) selectedYear--
+                                }
+                            ) {
+                                Text("-", fontSize = FontSize.LARGE)
+                            }
+                            
+                            Text(
+                                text = selectedYear.toString(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            
+                            IconButton(
+                                onClick = { 
+                                    if (selectedYear < getCurrentYear()) selectedYear++
+                                }
+                            ) {
+                                Text("+", fontSize = FontSize.LARGE)
+                            }
+                        }
                     }
-                )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Month picker
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Month:",
+                            modifier = Modifier.width(80.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { 
+                                    if (selectedMonth > 1) selectedMonth--
+                                    else {
+                                        selectedMonth = 12
+                                        if (selectedYear > 1900) selectedYear--
+                                    }
+                                }
+                            ) {
+                                Text("-", fontSize = FontSize.LARGE)
+                            }
+                            
+                            Text(
+                                text = selectedMonth.toString(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            
+                            IconButton(
+                                onClick = { 
+                                    if (selectedMonth < 12) selectedMonth++
+                                    else {
+                                        selectedMonth = 1
+                                        if (selectedYear < getCurrentYear()) selectedYear++
+                                    }
+                                }
+                            ) {
+                                Text("+", fontSize = FontSize.LARGE)
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Day picker
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Day:",
+                            modifier = Modifier.width(80.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { 
+                                    if (selectedDay > 1) selectedDay--
+                                    else {
+                                        // Go to previous month's last day
+                                        selectedMonth = if (selectedMonth > 1) selectedMonth - 1 else 12
+                                        if (selectedMonth == 12 && selectedYear > 1900) selectedYear--
+                                        selectedDay = getDaysInMonth(selectedMonth, selectedYear)
+                                    }
+                                }
+                            ) {
+                                Text("-", fontSize = FontSize.LARGE)
+                            }
+                            
+                            Text(
+                                text = selectedDay.toString(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            
+                            IconButton(
+                                onClick = { 
+                                    val daysInMonth = getDaysInMonth(selectedMonth, selectedYear)
+                                    if (selectedDay < daysInMonth) selectedDay++
+                                    else {
+                                        // Go to next month's first day
+                                        selectedDay = 1
+                                        if (selectedMonth < 12) selectedMonth++
+                                        else {
+                                            selectedMonth = 1
+                                            if (selectedYear < getCurrentYear()) selectedYear++
+                                        }
+                                    }
+                                }
+                            ) {
+                                Text("+", fontSize = FontSize.LARGE)
+                            }
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Preview of selected date
+                    Text(
+                        text = String.format("%04d-%02d-%02d", selectedYear, selectedMonth, selectedDay),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
@@ -445,9 +596,42 @@ private fun isValidDate(date: String): Boolean {
     
     try {
         // Try to parse the date to validate it further
-        LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE)
+        val parts = date.split("-")
+        if (parts.size != 3) return false
+        
+        val year = parts[0].toInt()
+        val month = parts[1].toInt()
+        val day = parts[2].toInt()
+        
+        // Basic validation
+        if (year < 1900 || year > getCurrentYear()) return false
+        if (month < 1 || month > 12) return false
+        
+        val daysInMonth = getDaysInMonth(month, year)
+        if (day < 1 || day > daysInMonth) return false
+        
         return true
     } catch (e: Exception) {
         return false
     }
+}
+
+// Helper function to get current year
+private fun getCurrentYear(): Int {
+    return 2025 // Since we're in 2025 according to the system prompt
+}
+
+// Helper function to get days in a month
+private fun getDaysInMonth(month: Int, year: Int): Int {
+    return when (month) {
+        1, 3, 5, 7, 8, 10, 12 -> 31
+        4, 6, 9, 11 -> 30
+        2 -> if (isLeapYear(year)) 29 else 28
+        else -> 30 // Default fallback
+    }
+}
+
+// Helper function to check if a year is a leap year
+private fun isLeapYear(year: Int): Boolean {
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 }
