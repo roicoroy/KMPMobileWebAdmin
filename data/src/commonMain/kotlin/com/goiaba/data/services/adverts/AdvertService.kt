@@ -25,25 +25,15 @@ class AdvertService {
             when (response.status) {
                 HttpStatusCode.OK -> {
                     val advertsResponse = response.body<AdvertGetResponse>()
-                    println("::::: $advertsResponse")
                     RequestState.Success(advertsResponse)
                 }
 
-                HttpStatusCode.Unauthorized -> {
-                    RequestState.Error("Unauthorized: Invalid API token")
-                }
-
-                HttpStatusCode.NotFound -> {
-                    RequestState.Error("Adverts endpoint not found")
-                }
-
-                HttpStatusCode.InternalServerError -> {
-                    RequestState.Error("Server error: Please try again later")
-                }
-
-                else -> {
-                    RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
-                }
+                HttpStatusCode.BadRequest -> RequestState.Error("Invalid user data. Please check your information.")
+                HttpStatusCode.Unauthorized -> RequestState.Error("Unauthorized: Please login to update user.")
+                HttpStatusCode.NotFound -> RequestState.Error("User not found.")
+                HttpStatusCode.Forbidden -> RequestState.Error("You don't have permission to update this user.")
+                HttpStatusCode.InternalServerError -> RequestState.Error("Server error: Please try again later.")
+                else -> RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
             }
         } catch (e: Exception) {
             RequestState.Error("Network error: ${e.message ?: "Unknown error occurred"}")
@@ -60,21 +50,12 @@ class AdvertService {
                     RequestState.Success(categoriesResponse)
                 }
 
-                HttpStatusCode.Unauthorized -> {
-                    RequestState.Error("Unauthorized: Invalid API token")
-                }
-
-                HttpStatusCode.NotFound -> {
-                    RequestState.Error("Categories endpoint not found")
-                }
-
-                HttpStatusCode.InternalServerError -> {
-                    RequestState.Error("Server error: Please try again later")
-                }
-
-                else -> {
-                    RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
-                }
+                HttpStatusCode.BadRequest -> RequestState.Error("Invalid user data. Please check your information.")
+                HttpStatusCode.Unauthorized -> RequestState.Error("Unauthorized: Please login to update user.")
+                HttpStatusCode.NotFound -> RequestState.Error("User not found.")
+                HttpStatusCode.Forbidden -> RequestState.Error("You don't have permission to update this user.")
+                HttpStatusCode.InternalServerError -> RequestState.Error("Server error: Please try again later.")
+                else -> RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
             }
         } catch (e: Exception) {
             RequestState.Error("Network error: ${e.message ?: "Unknown error occurred"}")
@@ -92,6 +73,7 @@ class AdvertService {
                     val advertResponse = response.body<AdvertCreateResponse>()
                     RequestState.Success(advertResponse)
                 }
+
                 HttpStatusCode.BadRequest -> RequestState.Error("Invalid user data. Please check your information.")
                 HttpStatusCode.Unauthorized -> RequestState.Error("Unauthorized: Please login to update user.")
                 HttpStatusCode.NotFound -> RequestState.Error("User not found.")
@@ -110,23 +92,26 @@ class AdvertService {
     ): RequestState<PutAddressToProfileResponse> {
         val profileDocumentId = profile.data.documentId
         val advertIdStr = advertId.toString()
-        val advertsIdList: List<String> = profile.data.adverts.map { it.id.toString() } + advertIdStr
+        val advertsIdList: List<String> =
+            profile.data.adverts.map { it.id.toString() } + advertIdStr
 
         return try {
-            val response: HttpResponse = ApiClient.httpClient.put("api/profiles/$profileDocumentId") {
-                setBody(
-                    PutAdvertProfileRequest(
-                        data = PutAdvertProfileRequest.Data(
-                            adverts = advertsIdList
+            val response: HttpResponse =
+                ApiClient.httpClient.put("api/profiles/$profileDocumentId") {
+                    setBody(
+                        PutAdvertProfileRequest(
+                            data = PutAdvertProfileRequest.Data(
+                                adverts = advertsIdList
+                            )
                         )
                     )
-                )
-            }
+                }
             when (response.status) {
                 HttpStatusCode.OK -> {
                     val userResponse = response.body<PutAddressToProfileResponse>()
                     RequestState.Success(userResponse)
                 }
+
                 HttpStatusCode.BadRequest -> RequestState.Error("Invalid user data. Please check your information.")
                 HttpStatusCode.Unauthorized -> RequestState.Error("Unauthorized: Please login to update user.")
                 HttpStatusCode.NotFound -> RequestState.Error("User not found.")
@@ -140,7 +125,10 @@ class AdvertService {
         }
     }
 
-    suspend fun updateAdvert(advertId: String, request: AdvertUpdateRequest): RequestState<AdvertUpdateResponse> {
+    suspend fun updateAdvert(
+        advertId: String,
+        request: AdvertUpdateRequest
+    ): RequestState<AdvertUpdateResponse> {
         return try {
             val response: HttpResponse = ApiClient.httpClient.put("api/adverts/$advertId") {
                 setBody(request)
@@ -152,29 +140,12 @@ class AdvertService {
                     RequestState.Success(advertResponse)
                 }
 
-                HttpStatusCode.BadRequest -> {
-                    RequestState.Error("Invalid advert data. Please check your information.")
-                }
-
-                HttpStatusCode.Unauthorized -> {
-                    RequestState.Error("Unauthorized: Please login to update adverts")
-                }
-
-                HttpStatusCode.NotFound -> {
-                    RequestState.Error("Advert not found")
-                }
-
-                HttpStatusCode.Forbidden -> {
-                    RequestState.Error("You don't have permission to update this advert")
-                }
-
-                HttpStatusCode.InternalServerError -> {
-                    RequestState.Error("Server error: Please try again later")
-                }
-
-                else -> {
-                    RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
-                }
+                HttpStatusCode.BadRequest -> RequestState.Error("Invalid user data. Please check your information.")
+                HttpStatusCode.Unauthorized -> RequestState.Error("Unauthorized: Please login to update user.")
+                HttpStatusCode.NotFound -> RequestState.Error("User not found.")
+                HttpStatusCode.Forbidden -> RequestState.Error("You don't have permission to update this user.")
+                HttpStatusCode.InternalServerError -> RequestState.Error("Server error: Please try again later.")
+                else -> RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
             }
         } catch (e: Exception) {
             RequestState.Error("Network error: ${e.message ?: "Unknown error occurred"}")
@@ -189,26 +160,12 @@ class AdvertService {
                 HttpStatusCode.OK, HttpStatusCode.NoContent -> {
                     RequestState.Success(true)
                 }
-
-                HttpStatusCode.Unauthorized -> {
-                    RequestState.Error("Unauthorized: Please login to delete adverts")
-                }
-
-                HttpStatusCode.NotFound -> {
-                    RequestState.Error("Advert not found")
-                }
-
-                HttpStatusCode.Forbidden -> {
-                    RequestState.Error("You don't have permission to delete this advert")
-                }
-
-                HttpStatusCode.InternalServerError -> {
-                    RequestState.Error("Server error: Please try again later")
-                }
-
-                else -> {
-                    RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
-                }
+                HttpStatusCode.BadRequest -> RequestState.Error("Invalid user data. Please check your information.")
+                HttpStatusCode.Unauthorized -> RequestState.Error("Unauthorized: Please login to update user.")
+                HttpStatusCode.NotFound -> RequestState.Error("User not found.")
+                HttpStatusCode.Forbidden -> RequestState.Error("You don't have permission to update this user.")
+                HttpStatusCode.InternalServerError -> RequestState.Error("Server error: Please try again later.")
+                else -> RequestState.Error("HTTP ${response.status.value}: ${response.status.description}")
             }
         } catch (e: Exception) {
             RequestState.Error("Network error: ${e.message ?: "Unknown error occurred"}")

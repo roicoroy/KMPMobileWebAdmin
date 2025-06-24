@@ -11,6 +11,7 @@ import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.models.profile.strapiUser.UserProfilePutResquest
 import com.goiaba.data.services.adverts.domain.AdvertRepository
+import com.goiaba.data.services.logger.UploadedFile
 import com.goiaba.data.services.logger.UploadedImage
 import com.goiaba.data.services.logger.domain.LoggerRepository
 import com.goiaba.data.services.profile.domain.ProfileRepository
@@ -61,12 +62,16 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     private val _updateMessage = MutableStateFlow<String?>(null)
     val updateMessage: StateFlow<String?> = _updateMessage.asStateFlow()
 
+    private val _uploadedFile = MutableStateFlow<UploadedFile?>(null)
+    val uploadedFile: StateFlow<UploadedFile?> = _uploadedFile.asStateFlow()
+
     // Image upload state
     private val _uploadedImageId = MutableStateFlow<Int?>(null)
     val uploadedImageId: StateFlow<Int?> = _uploadedImageId.asStateFlow()
-    
+
     // Image upload state for adverts
-    private val _uploadedImages = MutableStateFlow<RequestState<List<UploadedImage>>>(RequestState.Idle)
+    private val _uploadedImages =
+        MutableStateFlow<RequestState<List<UploadedImage>>>(RequestState.Idle)
     val uploadedImages: StateFlow<RequestState<List<UploadedImage>>> = _uploadedImages.asStateFlow()
 
     private val _isUploadingAdvertImage = MutableStateFlow(false)
@@ -79,6 +84,8 @@ class ProfileViewModel : ViewModel(), KoinComponent {
         updateAuthState()
         if (_isLoggedIn.value) {
             loadUserProfile()
+            loadUploadedImages()
+            _uploadedFile.value = null
         }
     }
 
@@ -91,11 +98,11 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 // Load user data first
                 profileRepository.getUsersMe().collect { userResult ->
                     _user.value = userResult
-                    
+
                     when (userResult) {
                         is RequestState.Success -> {
                             _userRole.value = userResult.data.role.name
-                            
+
                             // Check if user has a profile
                             if (userResult.data.profile.documentId.isNotEmpty()) {
                                 // Load the profile data
@@ -105,14 +112,16 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                                     }
                             } else {
                                 // User doesn't have a profile yet
-                                _strapiProfile.value = RequestState.Error("No profile found for this user")
+                                _strapiProfile.value =
+                                    RequestState.Error("No profile found for this user")
                             }
                         }
-                        
+
                         is RequestState.Error -> {
-                            _strapiProfile.value = RequestState.Error("Failed to load user data: ${userResult.message}")
+                            _strapiProfile.value =
+                                RequestState.Error("Failed to load user data: ${userResult.message}")
                         }
-                        
+
                         else -> {
                             // Keep loading state
                         }
@@ -132,7 +141,7 @@ class ProfileViewModel : ViewModel(), KoinComponent {
             }
         }
     }
-    
+
     // Load uploaded images for advert creation
     fun loadUploadedImages() {
         viewModelScope.launch {
@@ -146,9 +155,12 @@ class ProfileViewModel : ViewModel(), KoinComponent {
             }
         }
     }
-    
+
     // Upload image for advert
     fun uploadAdvertImage(imageData: ByteArray, fileName: String) {
+
+        _uploadedFile.value = null
+
         viewModelScope.launch {
             _isUploadingAdvertImage.value = true
             try {
@@ -158,16 +170,19 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                             val uploadedFile = result.data.files.firstOrNull()
                             if (uploadedFile != null) {
                                 _uploadedAdvertImageId.value = uploadedFile.id
+                                _uploadedFile.value = uploadedFile
                                 _updateMessage.value = "Image uploaded successfully!"
                                 // Reload images list
-                                loadUploadedImages()
+//                                loadUploadedImages()
                             } else {
                                 _updateMessage.value = "Image upload failed: No file returned"
                             }
                         }
+
                         is RequestState.Error -> {
                             _updateMessage.value = "Image upload failed: ${result.message}"
                         }
+
                         else -> {}
                     }
                     _isUploadingAdvertImage.value = false
@@ -177,6 +192,209 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 _updateMessage.value = "Image upload error: ${e.message}"
             }
         }
+    }
+
+    fun createAdvert(
+        title: String,
+        description: String,
+        categoryId: String,
+        coverId: String?,
+        slug: String?
+    ) {
+        viewModelScope.launch {
+            _isUpdatingAdvert.value = true
+            _updateMessage.value = null
+
+            try {
+                val currentUser = _user.value.getSuccessDataOrNull()
+                if (currentUser != null) {
+                    val request = AdvertCreateRequest(
+                        data = AdvertCreateRequest.AdvertCreateData(
+                            title = title,
+                            description = description,
+                            category = listOf(categoryId),
+                            cover = coverId,
+                            slug = slug
+                        )
+                    )
+
+                    advertRepository.createAdvert(request).collect { result ->
+                        when (result) {
+                            is RequestState.Loading -> {
+                                _isUpdatingAdvert.value = true
+                            }
+                            is RequestState.Success -> {
+                                val newAdvertId = result.data.data.id
+                                val profile = _strapiProfile.value.getSuccessData()
+                                addAdvertToProfile(profile, newAdvertId)
+                                _uploadedFile.value = null
+                            }
+                            is RequestState.Error -> {
+                                _isUpdatingAdvert.value = false
+                                _updateMessage.value = "Failed to create advert: ${result.message}"
+                                _uploadedFile.value = null
+                            }
+                            else -> {
+                                _isUpdatingAdvert.value = false
+                                _uploadedFile.value = null
+                            }
+                        }
+                    }
+                } else {
+                    _uploadedFile.value = null
+                    _isUpdatingAdvert.value = false
+                    _updateMessage.value = "User not found. Please login again."
+                }
+            } catch (e: Exception) {
+                _uploadedFile.value = null
+                _isUpdatingAdvert.value = false
+                _updateMessage.value = "Error creating advert: ${e.message}"
+            }
+        }
+    }
+
+    private suspend fun addAdvertToProfile(profile: StrapiProfile, newAdvertId: Int) {
+        return try {
+            advertRepository.addAdvertToProfile(profile, newAdvertId).collect { result ->
+                when (result) {
+                    is RequestState.Success -> {
+                        _isUpdatingAdvert.value = false
+                        _updateMessage.value = "Advert created and linked successfully!"
+                        loadUserProfile()
+                    }
+
+                    is RequestState.Error -> {
+                        _isUpdatingAdvert.value = false
+                        _updateMessage.value =
+                            "Advert created but failed to link: ${result.message}"
+                        loadUserProfile()
+                    }
+
+                    else -> {
+                        _isUpdatingAdvert.value = false
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            _isUpdatingAdvert.value = false
+            _updateMessage.value = "Advert created but linking failed: ${e.message}"
+            loadUserProfile()
+        }
+    }
+
+    fun updateAdvert(
+        advertId: String,
+        title: String,
+        description: String,
+        categoryId: String?,
+        slug: String?
+    ) {
+        viewModelScope.launch {
+            _isUpdatingAdvert.value = true
+            _updateMessage.value = null
+
+            try {
+                val request = AdvertUpdateRequest(
+                    data = AdvertUpdateRequest.AdvertUpdateData(
+                        title = title,
+                        description = description,
+                        category = categoryId,
+                        slug = slug
+                    )
+                )
+
+                advertRepository.updateAdvert(advertId, request).collect { result ->
+                    when (result) {
+                        is RequestState.Loading -> {
+                            _isUpdatingAdvert.value = true
+                        }
+
+                        is RequestState.Success -> {
+                            _isUpdatingAdvert.value = false
+                            _updateMessage.value = "Advert updated successfully!"
+                            loadUserProfile() // Refresh to show updated advert
+                        }
+
+                        is RequestState.Error -> {
+                            _isUpdatingAdvert.value = false
+                            _updateMessage.value = "Failed to update advert: ${result.message}"
+                        }
+
+                        else -> {
+                            _isUpdatingAdvert.value = false
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _isUpdatingAdvert.value = false
+                _updateMessage.value = "Error updating advert: ${e.message}"
+            }
+        }
+    }
+
+    fun deleteAdvert(advertId: String) {
+        viewModelScope.launch {
+            _isUpdatingAdvert.value = true
+            _updateMessage.value = null
+
+            try {
+                advertRepository.deleteAdvert(advertId).collect { result ->
+                    when (result) {
+                        is RequestState.Loading -> {
+                            _isUpdatingAdvert.value = true
+                        }
+
+                        is RequestState.Success -> {
+                            _isUpdatingAdvert.value = false
+                            _updateMessage.value = "Advert deleted successfully!"
+                            loadUserProfile() // Refresh to remove deleted advert
+                        }
+
+                        is RequestState.Error -> {
+                            _isUpdatingAdvert.value = false
+                            _updateMessage.value = "Failed to delete advert: ${result.message}"
+                        }
+
+                        else -> {
+                            _isUpdatingAdvert.value = false
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                _isUpdatingAdvert.value = false
+                _updateMessage.value = "Error deleting advert: ${e.message}"
+            }
+        }
+    }
+
+    private suspend fun addAddressToProfile(profileId: StrapiProfile, newAddressId: Int) {
+        return try {
+            profileRepository.addAddressToProfile(profileId, newAddressId).collect { result ->
+                when (result) {
+                    is RequestState.Success -> {
+                        _isUpdatingAddress.value = false
+                        _updateMessage.value = "Address created and linked successfully!"
+                        loadUserProfile()
+                    }
+
+                    is RequestState.Error -> {
+                        _isUpdatingAddress.value = false
+                        _updateMessage.value =
+                            "Address created but failed to link: ${result.message}"
+                        loadUserProfile()
+                    }
+
+                    else -> {
+                        // Keep loading state
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            _isUpdatingAddress.value = false
+            _updateMessage.value = "Address created but linking failed: ${e.message}"
+            loadUserProfile()
+        }
+
     }
 
     fun uploadProfileImage(imageData: ByteArray, fileName: String) {
@@ -326,36 +544,6 @@ class ProfileViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private suspend fun addAddressToProfile(profileId: StrapiProfile, newAddressId: Int) {
-        return try {
-            profileRepository.addAddressToProfile(profileId, newAddressId).collect { result ->
-                when (result) {
-                    is RequestState.Success -> {
-                        _isUpdatingAddress.value = false
-                        _updateMessage.value = "Address created and linked successfully!"
-                        loadUserProfile()
-                    }
-
-                    is RequestState.Error -> {
-                        _isUpdatingAddress.value = false
-                        _updateMessage.value =
-                            "Address created but failed to link: ${result.message}"
-                        loadUserProfile()
-                    }
-
-                    else -> {
-                        // Keep loading state
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            _isUpdatingAddress.value = false
-            _updateMessage.value = "Address created but linking failed: ${e.message}"
-            loadUserProfile()
-        }
-
-    }
-
     fun updateAddress(
         addressId: String,
         firstName: String,
@@ -447,178 +635,6 @@ class ProfileViewModel : ViewModel(), KoinComponent {
             } catch (e: Exception) {
                 _isUpdatingAddress.value = false
                 _updateMessage.value = "Error deleting address: ${e.message}"
-            }
-        }
-    }
-
-    // Advert CRUD operations
-    fun createAdvert(
-        title: String,
-        description: String,
-        categoryId: String,
-        coverId: String?,
-        slug: String?
-    ) {
-        viewModelScope.launch {
-            _isUpdatingAdvert.value = true
-            _updateMessage.value = null
-
-            try {
-                val currentUser = _user.value.getSuccessDataOrNull()
-                if (currentUser != null) {
-                    val request = AdvertCreateRequest(
-                        data = AdvertCreateRequest.AdvertCreateData(
-                            title = title,
-                            description = description,
-                            category = listOf(categoryId),
-                            cover = coverId,
-                            slug = slug
-                        )
-                    )
-
-                    advertRepository.createAdvert(request).collect { result ->
-                        when (result) {
-                            is RequestState.Loading -> {
-                                _isUpdatingAdvert.value = true
-                            }
-
-                            is RequestState.Success -> {
-                                val newAdvertId = result.data.data.id
-                                val profile = _strapiProfile.value.getSuccessData()
-                                addAdvertToProfile(profile, newAdvertId)
-                            }
-
-                            is RequestState.Error -> {
-                                _isUpdatingAdvert.value = false
-                                _updateMessage.value = "Failed to create advert: ${result.message}"
-                            }
-
-                            else -> {
-                                _isUpdatingAdvert.value = false
-                            }
-                        }
-                    }
-                } else {
-                    _isUpdatingAdvert.value = false
-                    _updateMessage.value = "User not found. Please login again."
-                }
-            } catch (e: Exception) {
-                _isUpdatingAdvert.value = false
-                _updateMessage.value = "Error creating advert: ${e.message}"
-            }
-        }
-    }
-
-    private suspend fun addAdvertToProfile(profile: StrapiProfile, newAdvertId: Int) {
-        return try {
-            advertRepository.addAdvertToProfile(profile, newAdvertId).collect { result ->
-                when (result) {
-                    is RequestState.Success -> {
-                        _isUpdatingAdvert.value = false
-                        _updateMessage.value = "Advert created and linked successfully!"
-                        loadUserProfile()
-                    }
-
-                    is RequestState.Error -> {
-                        _isUpdatingAdvert.value = false
-                        _updateMessage.value =
-                            "Advert created but failed to link: ${result.message}"
-                        loadUserProfile()
-                    }
-
-                    else -> {
-                        _isUpdatingAdvert.value = false
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            _isUpdatingAdvert.value = false
-            _updateMessage.value = "Advert created but linking failed: ${e.message}"
-            loadUserProfile()
-        }
-    }
-
-    fun updateAdvert(
-        advertId: String,
-        title: String,
-        description: String,
-        categoryId: String?,
-        slug: String?
-    ) {
-        viewModelScope.launch {
-            _isUpdatingAdvert.value = true
-            _updateMessage.value = null
-
-            try {
-                val request = AdvertUpdateRequest(
-                    data = AdvertUpdateRequest.AdvertUpdateData(
-                        title = title,
-                        description = description,
-                        category = categoryId,
-                        slug = slug
-                    )
-                )
-
-                advertRepository.updateAdvert(advertId, request).collect { result ->
-                    when (result) {
-                        is RequestState.Loading -> {
-                            _isUpdatingAdvert.value = true
-                        }
-
-                        is RequestState.Success -> {
-                            _isUpdatingAdvert.value = false
-                            _updateMessage.value = "Advert updated successfully!"
-                            loadUserProfile() // Refresh to show updated advert
-                        }
-
-                        is RequestState.Error -> {
-                            _isUpdatingAdvert.value = false
-                            _updateMessage.value = "Failed to update advert: ${result.message}"
-                        }
-
-                        else -> {
-                            _isUpdatingAdvert.value = false
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                _isUpdatingAdvert.value = false
-                _updateMessage.value = "Error updating advert: ${e.message}"
-            }
-        }
-    }
-
-    fun deleteAdvert(advertId: String) {
-        viewModelScope.launch {
-            _isUpdatingAdvert.value = true
-            _updateMessage.value = null
-
-            try {
-                advertRepository.deleteAdvert(advertId).collect { result ->
-                    when (result) {
-                        is RequestState.Loading -> {
-                            _isUpdatingAdvert.value = true
-                        }
-
-                        is RequestState.Success -> {
-                            _isUpdatingAdvert.value = false
-                            _updateMessage.value = "Advert deleted successfully!"
-                            loadUserProfile() // Refresh to remove deleted advert
-                        }
-
-                        is RequestState.Error -> {
-                            _isUpdatingAdvert.value = false
-                            _updateMessage.value = "Failed to delete advert: ${result.message}"
-                        }
-
-                        else -> {
-                            _isUpdatingAdvert.value = false
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                _isUpdatingAdvert.value = false
-                _updateMessage.value = "Error deleting advert: ${e.message}"
             }
         }
     }

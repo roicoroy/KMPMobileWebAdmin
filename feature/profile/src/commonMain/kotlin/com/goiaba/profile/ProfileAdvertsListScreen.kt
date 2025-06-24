@@ -3,12 +3,10 @@ package com.goiaba.profile
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.goiaba.profile.components.AdvertCard
 import com.goiaba.profile.modals.AdvertCreateModal
@@ -26,7 +24,7 @@ fun ProfileAdvertsListScreen(
     navigateToHome: () -> Unit,
 ) {
     val viewModel = koinViewModel<ProfileViewModel>()
-    
+
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val userEmail by viewModel.userEmail.collectAsState()
     val strapiProfile by viewModel.strapiProfile.collectAsState()
@@ -37,7 +35,11 @@ fun ProfileAdvertsListScreen(
     val isUploadingImage by viewModel.isUploadingAdvertImage.collectAsState()
 
     // Modal state
-    var selectedAdvert by remember { mutableStateOf<com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Advert?>(null) }
+    var selectedAdvert by remember {
+        mutableStateOf<com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Advert?>(
+            null
+        )
+    }
     var showAddAdvertModal by remember { mutableStateOf(false) }
     var showEditAdvertModal by remember { mutableStateOf(false) }
 
@@ -138,9 +140,9 @@ fun ProfileAdvertsListScreen(
                         title = "Login Required",
                         subtitle = "Please login to view your adverts"
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Button(
                         onClick = navigateToHome,
                         colors = ButtonDefaults.buttonColors(
@@ -190,9 +192,9 @@ fun ProfileAdvertsListScreen(
                                     title = "No Adverts Yet",
                                     subtitle = "You haven't created any adverts yet. Tap the + button to create your first advert."
                                 )
-                                
+
                                 Spacer(modifier = Modifier.height(24.dp))
-                                
+
                                 Button(
                                     onClick = { showAddAdvertModal = true },
                                     colors = ButtonDefaults.buttonColors(
@@ -211,56 +213,15 @@ fun ProfileAdvertsListScreen(
                                     .padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                item {
-                                    Card(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                                        ),
-                                        shape = RoundedCornerShape(12.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = "📢",
-                                                fontSize = FontSize.LARGE,
-                                                modifier = Modifier.padding(end = 12.dp)
-                                            )
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    text = "My Adverts",
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                                )
-                                                Text(
-                                                    text = "${profileData.data.adverts.size} advert${if (profileData.data.adverts.size != 1) "s" else ""}",
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                    fontSize = FontSize.SMALL
-                                                )
-                                            }
-                                            TextButton(
-                                                onClick = { showAddAdvertModal = true }
-                                            ) {
-                                                Text("+ Add New")
-                                            }
-                                        }
-                                    }
-                                }
-
                                 items(profileData.data.adverts) { advert ->
                                     AdvertCard(
                                         advert = advert,
-                                        onAdvertClick = { 
+                                        onAdvertClick = {
                                             selectedAdvert = it
                                             showEditAdvertModal = true
                                         }
                                     )
                                 }
-                                
                                 // Add some bottom padding
                                 item {
                                     Spacer(modifier = Modifier.height(16.dp))
@@ -283,9 +244,9 @@ fun ProfileAdvertsListScreen(
                                 title = "Failed to Load Adverts",
                                 subtitle = message
                             )
-                            
+
                             Spacer(modifier = Modifier.height(24.dp))
-                            
+
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
@@ -297,7 +258,7 @@ fun ProfileAdvertsListScreen(
                                 ) {
                                     Text("🔄 Retry")
                                 }
-                                
+
                                 OutlinedButton(
                                     onClick = navigateToHome
                                 ) {
@@ -353,7 +314,7 @@ fun ProfileAdvertsListScreen(
                     advert = selectedAdvert,
                     categories = categoriesData.data,
                     isLoading = isUpdatingAdvert,
-                    onDismiss = { 
+                    onDismiss = {
                         showEditAdvertModal = false
                         selectedAdvert = null
                     },
@@ -382,7 +343,7 @@ fun ProfileAdvertsListScreen(
             onError = { },
             onLoading = { }
         )
-        
+
         // Advert Details Modal
         AdvertDetailsModal(
             isVisible = selectedAdvert != null && !showEditAdvertModal,

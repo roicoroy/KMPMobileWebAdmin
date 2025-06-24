@@ -50,6 +50,7 @@ fun StrapiProfileCard(
                             viewModel.uploadProfileImage(result.imageData, result.fileName)
                         }
                     }
+
                     is ImagePickerResult.Error -> {}
                     null -> {}
                 }
@@ -105,6 +106,7 @@ fun StrapiProfileCard(
                                 contentDescription = "Default avatar",
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.size(40.dp)
+                                    .clickable { shouldPickImage = true }
                             )
                         }
                     }

@@ -52,8 +52,6 @@ class ProfileService {
         userDocumentId: String,
     ): RequestState<StrapiProfile> {
         return try {
-//            http://localhost:1337/api/profiles/hx64nkwcpgta4lmtwk7p4lyv?populate=*
-//            r21y5s6f16brcbn6a2zwex0f
             val response: HttpResponse = ApiClient.httpClient.get("api/profiles/$userDocumentId?populate=*")
             when (response.status) {
                 HttpStatusCode.OK -> {

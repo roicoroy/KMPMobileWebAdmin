@@ -324,7 +324,7 @@ fun ProfileAddressListScreen(
             },
             onDeleteAddress = {
                 selectedAddress?.let { address ->
-                    viewModel.deleteAddress(address.id.toString() )
+                    viewModel.deleteAddress(address.documentId.toString() )
                 }
                 selectedAddress = null
             }
@@ -338,7 +338,7 @@ fun ProfileAddressListScreen(
             onDismiss = { showAddAddressModal = false },
             onDelete = {
                 selectedAddress?.let { address ->
-                    viewModel.deleteAddress(address.documentId)
+                    viewModel.deleteAddress(address.documentId.toString())
                 }
                 selectedAddress = null
             },

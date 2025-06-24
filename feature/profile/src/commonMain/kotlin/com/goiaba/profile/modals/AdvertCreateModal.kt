@@ -28,11 +28,13 @@ import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import com.goiaba.data.models.adverts.CategoryResponse
 import com.goiaba.data.services.logger.UploadedImage
+import com.goiaba.profile.ProfileViewModel
 import com.goiaba.shared.FontSize
 import com.goiaba.shared.Resources
 import com.goiaba.shared.util.ImagePickerResult
 import com.goiaba.shared.util.rememberImagePicker
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,7 +55,12 @@ fun AdvertCreateModal(
     ) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    
+
+    val viewModel = koinViewModel<ProfileViewModel>()
+
+    val uploadedFile by viewModel.uploadedFile.collectAsState()
+
+
     // Form state
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -62,18 +69,18 @@ fun AdvertCreateModal(
     var slug by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var coverExpanded by remember { mutableStateOf(false) }
-    
+
     // Error states
     var titleError by remember { mutableStateOf<String?>(null) }
     var descriptionError by remember { mutableStateOf<String?>(null) }
     var categoryError by remember { mutableStateOf<String?>(null) }
-    
+
     // Image picker state
     var shouldPickImage by remember { mutableStateOf(false) }
     var selectedImageData by remember { mutableStateOf<ByteArray?>(null) }
     var selectedImageName by remember { mutableStateOf<String?>(null) }
     val imagePicker = rememberImagePicker()
-    
+
     // Reset form when modal opens/closes
     LaunchedEffect(isVisible) {
         if (isVisible) {
@@ -89,7 +96,7 @@ fun AdvertCreateModal(
             selectedImageName = null
         }
     }
-    
+
     // Handle image picking
     LaunchedEffect(shouldPickImage) {
         if (shouldPickImage) {
@@ -99,21 +106,23 @@ fun AdvertCreateModal(
                     is ImagePickerResult.Success -> {
                         selectedImageData = result.imageData
                         selectedImageName = result.fileName
-                        
+
                         // Save to gallery first
                         val saved = imagePicker.saveImageToGallery(
                             result.imageData,
                             result.fileName
                         )
-                        
+
                         if (saved) {
                             // Upload to Strapi
                             onImageUpload(result.imageData, result.fileName)
                         }
                     }
+
                     is ImagePickerResult.Error -> {
                         // Handle error - could show a snackbar or error message
                     }
+
                     null -> {
                         // User cancelled
                     }
@@ -125,34 +134,34 @@ fun AdvertCreateModal(
             }
         }
     }
-    
+
     fun validateForm(): Boolean {
         var isValid = true
-        
+
         if (title.isBlank()) {
             titleError = "Title is required"
             isValid = false
         } else {
             titleError = null
         }
-        
+
         if (description.isBlank()) {
             descriptionError = "Description is required"
             isValid = false
         } else {
             descriptionError = null
         }
-        
+
         if (selectedCategoryId == null) {
             categoryError = "Please select a category"
             isValid = false
         } else {
             categoryError = null
         }
-        
+
         return isValid
     }
-    
+
     if (isVisible) {
         Dialog(
             onDismissRequest = onDismiss,
@@ -195,7 +204,7 @@ fun AdvertCreateModal(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            
+
                             IconButton(onClick = onDismiss) {
                                 Icon(
                                     painter = painterResource(Resources.Icon.Close),
@@ -204,9 +213,9 @@ fun AdvertCreateModal(
                                 )
                             }
                         }
-                        
+
                         Spacer(modifier = Modifier.height(24.dp))
-                        
+
                         // Form content
                         Column(
                             modifier = Modifier
@@ -219,7 +228,9 @@ fun AdvertCreateModal(
                                     .fillMaxWidth()
                                     .padding(bottom = 16.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                        alpha = 0.3f
+                                    )
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -236,7 +247,7 @@ fun AdvertCreateModal(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.padding(bottom = 12.dp)
                                     )
-                                    
+
                                     // Image preview or placeholder
                                     Box(
                                         modifier = Modifier
@@ -248,17 +259,21 @@ fun AdvertCreateModal(
                                                 color = MaterialTheme.colorScheme.outline,
                                                 shape = RoundedCornerShape(8.dp)
                                             )
-                                            .clickable(enabled = !isLoading && !isUploadingImage) { 
-                                                shouldPickImage = true 
+                                            .clickable(enabled = !isLoading && !isUploadingImage) {
+                                                shouldPickImage = true
                                             },
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        if (selectedCoverId != null && uploadedImages.isNotEmpty()) {
+                                        if (uploadedFile != null && uploadedImages.isNotEmpty()) {
                                             // Find the selected image
-                                            val selectedImage = uploadedImages.find { it.id.toString() == selectedCoverId }
-                                            if (selectedImage != null) {
+                                            val selectedImage =
+                                                uploadedImages.find { it.id.toString() == uploadedFile!!.id.toString() }
+                                            if (uploadedFile != null) {
+
+                                                selectedCoverId = uploadedFile!!.id.toString()
+
                                                 AsyncImage(
-                                                    model = selectedImage.url,
+                                                    model = uploadedFile?.url,
                                                     contentDescription = "Selected cover image",
                                                     modifier = Modifier.fillMaxSize(),
                                                     contentScale = ContentScale.Crop
@@ -314,63 +329,69 @@ fun AdvertCreateModal(
                                             }
                                         }
                                     }
-                                    
+
                                     Spacer(modifier = Modifier.height(12.dp))
-                                    
+
                                     // Select from existing images
-                                    if (uploadedImages.isNotEmpty()) {
-                                        ExposedDropdownMenuBox(
-                                            expanded = coverExpanded,
-                                            onExpandedChange = { coverExpanded = !coverExpanded && !isLoading && !isUploadingImage }
-                                        ) {
-                                            OutlinedTextField(
-                                                value = selectedCoverId?.let { id ->
-                                                    uploadedImages.find { it.id.toString() == id }?.name ?: "Select image"
-                                                } ?: "Select existing image",
-                                                onValueChange = { },
-                                                readOnly = true,
-                                                label = { Text("Cover Image") },
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .menuAnchor(),
-                                                enabled = !isLoading && !isUploadingImage,
-                                                trailingIcon = {
-                                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = coverExpanded)
-                                                }
-                                            )
-                                            
-                                            ExposedDropdownMenu(
-                                                expanded = coverExpanded,
-                                                onDismissRequest = { coverExpanded = false }
-                                            ) {
-                                                // Option to clear selection
-                                                DropdownMenuItem(
-                                                    text = { Text("No image") },
-                                                    onClick = {
-                                                        selectedCoverId = null
-                                                        coverExpanded = false
-                                                    }
-                                                )
-                                                
-                                                uploadedImages.forEach { image ->
-                                                    DropdownMenuItem(
-                                                        text = { Text(image.name) },
-                                                        onClick = {
-                                                            selectedCoverId = image.id.toString()
-                                                            coverExpanded = false
-                                                        }
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
+//                                    if (uploadedImages.isNotEmpty()) {
+//                                        ExposedDropdownMenuBox(
+//                                            expanded = coverExpanded,
+//                                            onExpandedChange = {
+//                                                coverExpanded =
+//                                                    !coverExpanded && !isLoading && !isUploadingImage
+//                                            }
+//                                        ) {
+//                                            OutlinedTextField(
+//                                                value = selectedCoverId?.let { id ->
+//                                                    uploadedImages.find { it.id.toString() == id }?.name
+//                                                        ?: "Select image"
+//                                                } ?: "Select existing image",
+//                                                onValueChange = { },
+//                                                readOnly = true,
+//                                                label = { Text("Cover Image") },
+//                                                modifier = Modifier
+//                                                    .fillMaxWidth()
+//                                                    .menuAnchor(),
+//                                                enabled = !isLoading && !isUploadingImage,
+//                                                trailingIcon = {
+//                                                    ExposedDropdownMenuDefaults.TrailingIcon(
+//                                                        expanded = coverExpanded
+//                                                    )
+//                                                }
+//                                            )
+//
+//                                            ExposedDropdownMenu(
+//                                                expanded = coverExpanded,
+//                                                onDismissRequest = { coverExpanded = false }
+//                                            ) {
+//                                                // Option to clear selection
+//                                                DropdownMenuItem(
+//                                                    text = { Text("No image") },
+//                                                    onClick = {
+//                                                        selectedCoverId = null
+//                                                        coverExpanded = false
+//                                                    }
+//                                                )
+//
+//                                                uploadedImages.forEach { image ->
+//                                                    DropdownMenuItem(
+//                                                        text = { Text(image.name) },
+//                                                        onClick = {
+//                                                            selectedCoverId = image.id.toString()
+//                                                            coverExpanded = false
+//                                                        }
+//                                                    )
+//                                                }
+//                                            }
+//                                        }
+//                                    }
                                 }
                             }
-                            
+
                             // Title field
                             OutlinedTextField(
                                 value = title,
-                                onValueChange = { 
+                                onValueChange = {
                                     title = it
                                     titleError = null
                                     // Auto-generate slug from title
@@ -395,13 +416,13 @@ fun AdvertCreateModal(
                                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                                 )
                             )
-                            
+
                             Spacer(modifier = Modifier.height(16.dp))
-                            
+
                             // Description field
                             OutlinedTextField(
                                 value = description,
-                                onValueChange = { 
+                                onValueChange = {
                                     description = it
                                     descriptionError = null
                                 },
@@ -423,13 +444,15 @@ fun AdvertCreateModal(
                                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
                                 )
                             )
-                            
+
                             Spacer(modifier = Modifier.height(16.dp))
-                            
+
                             // Category dropdown
                             ExposedDropdownMenuBox(
                                 expanded = expanded,
-                                onExpandedChange = { expanded = !expanded && !isLoading && !isUploadingImage }
+                                onExpandedChange = {
+                                    expanded = !expanded && !isLoading && !isUploadingImage
+                                }
                             ) {
                                 OutlinedTextField(
                                     value = selectedCategoryId ?: "",
@@ -449,14 +472,14 @@ fun AdvertCreateModal(
                                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                                     }
                                 )
-                                
+
                                 ExposedDropdownMenu(
                                     expanded = expanded,
                                     onDismissRequest = { expanded = false }
                                 ) {
                                     categories.forEach { category ->
                                         DropdownMenuItem(
-                                            text = { 
+                                            text = {
                                                 Column {
                                                     Text(
                                                         text = category.name,
@@ -480,13 +503,13 @@ fun AdvertCreateModal(
                                     }
                                 }
                             }
-                            
+
                             Spacer(modifier = Modifier.height(16.dp))
-                            
+
                             // Slug field (optional)
                             OutlinedTextField(
                                 value = slug,
-                                onValueChange = { 
+                                onValueChange = {
                                     slug = it.lowercase()
                                         .replace(Regex("[^a-z0-9\\-]"), "")
                                 },
@@ -510,9 +533,9 @@ fun AdvertCreateModal(
                                 )
                             )
                         }
-                        
+
                         Spacer(modifier = Modifier.height(24.dp))
-                        
+
                         // Action buttons
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -525,7 +548,7 @@ fun AdvertCreateModal(
                             ) {
                                 Text("Cancel")
                             }
-                            
+
                             Button(
                                 onClick = {
                                     if (validateForm()) {

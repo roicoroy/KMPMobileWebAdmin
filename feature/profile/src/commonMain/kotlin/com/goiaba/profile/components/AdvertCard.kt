@@ -71,39 +71,6 @@ fun AdvertCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                
-                // Status badge and clickable indicator
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Text(
-                            text = "✅ Active",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = FontSize.SMALL,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                    
-                    if (onAdvertClick != null) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = RoundedCornerShape(20.dp)
-                        ) {
-                            Text(
-                                text = "→",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
             }
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -117,33 +84,7 @@ fun AdvertCard(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
             }
-            
-            // Advert details
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Document ID
-                AdvertDetailRow(
-                    icon = "📄",
-                    label = "Document ID",
-                    value = advert.documentId
-                )
-                
-                // Slug
-                advert.slug?.let { slug ->
-                    if (slug.isNotBlank()) {
-                        AdvertDetailRow(
-                            icon = "🔗",
-                            label = "Slug",
-                            value = slug
-                        )
-                    }
-                }
-            }
-            
             Spacer(modifier = Modifier.height(12.dp))
-            
             // Metadata
             Card(
                 modifier = Modifier.fillMaxWidth(),
