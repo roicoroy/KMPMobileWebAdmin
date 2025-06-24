@@ -11,6 +11,7 @@ import com.goiaba.data.models.profile.strapiUser.StrapiProfile
 import com.goiaba.data.models.profile.strapiUser.StrapiUser
 import com.goiaba.data.models.profile.strapiUser.UserProfilePutResquest
 import com.goiaba.data.services.adverts.domain.AdvertRepository
+import com.goiaba.data.services.logger.UploadedImage
 import com.goiaba.data.services.logger.domain.LoggerRepository
 import com.goiaba.data.services.profile.domain.ProfileRepository
 import com.goiaba.shared.util.RequestState
@@ -63,6 +64,16 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     // Image upload state
     private val _uploadedImageId = MutableStateFlow<Int?>(null)
     val uploadedImageId: StateFlow<Int?> = _uploadedImageId.asStateFlow()
+    
+    // Image upload state for adverts
+    private val _uploadedImages = MutableStateFlow<RequestState<List<UploadedImage>>>(RequestState.Idle)
+    val uploadedImages: StateFlow<RequestState<List<UploadedImage>>> = _uploadedImages.asStateFlow()
+
+    private val _isUploadingAdvertImage = MutableStateFlow(false)
+    val isUploadingAdvertImage: StateFlow<Boolean> = _isUploadingAdvertImage.asStateFlow()
+
+    private val _uploadedAdvertImageId = MutableStateFlow<Int?>(null)
+    val uploadedAdvertImageId: StateFlow<Int?> = _uploadedAdvertImageId.asStateFlow()
 
     init {
         updateAuthState()
@@ -80,11 +91,11 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 // Load user data first
                 profileRepository.getUsersMe().collect { userResult ->
                     _user.value = userResult
-
+                    
                     when (userResult) {
                         is RequestState.Success -> {
                             _userRole.value = userResult.data.role.name
-
+                            
                             // Check if user has a profile
                             if (userResult.data.profile.documentId.isNotEmpty()) {
                                 // Load the profile data
@@ -97,11 +108,11 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                                 _strapiProfile.value = RequestState.Error("No profile found for this user")
                             }
                         }
-
+                        
                         is RequestState.Error -> {
                             _strapiProfile.value = RequestState.Error("Failed to load user data: ${userResult.message}")
                         }
-
+                        
                         else -> {
                             // Keep loading state
                         }
@@ -118,6 +129,52 @@ class ProfileViewModel : ViewModel(), KoinComponent {
         viewModelScope.launch {
             advertRepository.getCategories().collect { result ->
                 _categories.value = result
+            }
+        }
+    }
+    
+    // Load uploaded images for advert creation
+    fun loadUploadedImages() {
+        viewModelScope.launch {
+            _uploadedImages.value = RequestState.Loading
+            try {
+                loggerRepository.getUploadedImages().collect { result ->
+                    _uploadedImages.value = result
+                }
+            } catch (e: Exception) {
+                _uploadedImages.value = RequestState.Error("Failed to load images: ${e.message}")
+            }
+        }
+    }
+    
+    // Upload image for advert
+    fun uploadAdvertImage(imageData: ByteArray, fileName: String) {
+        viewModelScope.launch {
+            _isUploadingAdvertImage.value = true
+            try {
+                loggerRepository.uploadImageToStrapi(imageData, fileName).collect { result ->
+                    when (result) {
+                        is RequestState.Success -> {
+                            val uploadedFile = result.data.files.firstOrNull()
+                            if (uploadedFile != null) {
+                                _uploadedAdvertImageId.value = uploadedFile.id
+                                _updateMessage.value = "Image uploaded successfully!"
+                                // Reload images list
+                                loadUploadedImages()
+                            } else {
+                                _updateMessage.value = "Image upload failed: No file returned"
+                            }
+                        }
+                        is RequestState.Error -> {
+                            _updateMessage.value = "Image upload failed: ${result.message}"
+                        }
+                        else -> {}
+                    }
+                    _isUploadingAdvertImage.value = false
+                }
+            } catch (e: Exception) {
+                _isUploadingAdvertImage.value = false
+                _updateMessage.value = "Image upload error: ${e.message}"
             }
         }
     }
@@ -395,7 +452,13 @@ class ProfileViewModel : ViewModel(), KoinComponent {
     }
 
     // Advert CRUD operations
-    fun createAdvert(title: String, description: String, categoryId: String, slug: String?) {
+    fun createAdvert(
+        title: String,
+        description: String,
+        categoryId: String,
+        coverId: String?,
+        slug: String?
+    ) {
         viewModelScope.launch {
             _isUpdatingAdvert.value = true
             _updateMessage.value = null
@@ -408,7 +471,7 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                             title = title,
                             description = description,
                             category = listOf(categoryId),
-                            cover = "30",
+                            cover = coverId,
                             slug = slug
                         )
                     )
@@ -420,18 +483,9 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                             }
 
                             is RequestState.Success -> {
-                                val currentUser = _user.value.getSuccessDataOrNull()
-                                if (currentUser != null) {
-                                    val newAdvertId = result.data.data.id
-                                    val profile = _strapiProfile.value.getSuccessData()
-
-                                    addAdvertToProfile(profile, newAdvertId)
-                                } else {
-                                    _isUpdatingAddress.value = false
-                                    _updateMessage.value =
-                                        "Address created but failed to link to user profile"
-                                    loadUserProfile() // Still refresh to show the address
-                                }
+                                val newAdvertId = result.data.data.id
+                                val profile = _strapiProfile.value.getSuccessData()
+                                addAdvertToProfile(profile, newAdvertId)
                             }
 
                             is RequestState.Error -> {
@@ -455,20 +509,20 @@ class ProfileViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private suspend fun addAdvertToProfile(profile: StrapiProfile, newAddressId: Int) {
+    private suspend fun addAdvertToProfile(profile: StrapiProfile, newAdvertId: Int) {
         return try {
-            advertRepository.addAdvertToProfile(profile, newAddressId).collect { result ->
+            advertRepository.addAdvertToProfile(profile, newAdvertId).collect { result ->
                 when (result) {
                     is RequestState.Success -> {
-                        _isUpdatingAddress.value = false
-                        _updateMessage.value = "Address created and linked successfully!"
+                        _isUpdatingAdvert.value = false
+                        _updateMessage.value = "Advert created and linked successfully!"
                         loadUserProfile()
                     }
 
                     is RequestState.Error -> {
-                        _isUpdatingAddress.value = false
+                        _isUpdatingAdvert.value = false
                         _updateMessage.value =
-                            "Address created but failed to link: ${result.message}"
+                            "Advert created but failed to link: ${result.message}"
                         loadUserProfile()
                     }
 
@@ -478,8 +532,8 @@ class ProfileViewModel : ViewModel(), KoinComponent {
                 }
             }
         } catch (e: Exception) {
-            _isUpdatingAddress.value = false
-            _updateMessage.value = "Address created but linking failed: ${e.message}"
+            _isUpdatingAdvert.value = false
+            _updateMessage.value = "Advert created but linking failed: ${e.message}"
             loadUserProfile()
         }
     }

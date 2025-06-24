@@ -33,6 +33,8 @@ fun ProfileAdvertsListScreen(
     val categories by viewModel.categories.collectAsState()
     val isUpdatingAdvert by viewModel.isUpdatingAdvert.collectAsState()
     val updateMessage by viewModel.updateMessage.collectAsState()
+    val uploadedImages by viewModel.uploadedImages.collectAsState()
+    val isUploadingImage by viewModel.isUploadingAdvertImage.collectAsState()
 
     // Modal state
     var selectedAdvert by remember { mutableStateOf<com.goiaba.data.models.profile.strapiUser.StrapiProfile.Data.Advert?>(null) }
@@ -44,6 +46,7 @@ fun ProfileAdvertsListScreen(
     LaunchedEffect(Unit) {
         viewModel.updateAuthState()
         viewModel.loadCategories()
+        viewModel.loadUploadedImages()
     }
 
     // Show update messages
@@ -308,22 +311,34 @@ fun ProfileAdvertsListScreen(
         }
 
         // Create Advert Modal
-        categories.DisplayResult(
-            onSuccess = { categoriesData ->
-                AdvertCreateModal(
-                    isVisible = showAddAdvertModal,
-                    categories = categoriesData.data,
-                    isLoading = isUpdatingAdvert,
-                    onDismiss = { showAddAdvertModal = false },
-                    onSave = { title, description, categoryId, slug ->
-                        viewModel.createAdvert(
-                            title = title,
-                            description = description,
-                            categoryId = categoryId,
-                            slug = slug
+        uploadedImages.DisplayResult(
+            onSuccess = { images ->
+                categories.DisplayResult(
+                    onSuccess = { categoriesData ->
+                        AdvertCreateModal(
+                            isVisible = showAddAdvertModal,
+                            categories = categoriesData.data,
+                            uploadedImages = images,
+                            isLoading = isUpdatingAdvert,
+                            isUploadingImage = isUploadingImage,
+                            onImageUpload = { imageData, fileName ->
+                                viewModel.uploadAdvertImage(imageData, fileName)
+                            },
+                            onDismiss = { showAddAdvertModal = false },
+                            onSave = { title, description, categoryId, coverId, slug ->
+                                viewModel.createAdvert(
+                                    title = title,
+                                    description = description,
+                                    categoryId = categoryId,
+                                    coverId = coverId,
+                                    slug = slug
+                                )
+                                showAddAdvertModal = false
+                            }
                         )
-                        showAddAdvertModal = false
-                    }
+                    },
+                    onError = { },
+                    onLoading = { }
                 )
             },
             onError = { },
@@ -366,6 +381,13 @@ fun ProfileAdvertsListScreen(
             },
             onError = { },
             onLoading = { }
+        )
+        
+        // Advert Details Modal
+        AdvertDetailsModal(
+            isVisible = selectedAdvert != null && !showEditAdvertModal,
+            advert = selectedAdvert,
+            onDismiss = { selectedAdvert = null }
         )
     }
 }
